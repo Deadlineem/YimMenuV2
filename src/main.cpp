@@ -25,10 +25,10 @@ namespace YimMenu
 {
 	DWORD Main(void*)
 	{
-		const auto documents = std::filesystem::path(std::getenv("appdata")) / "YimMenuV2";
+		const auto documents = std::filesystem::path(std::getenv("appdata")) / YimMenu::SCVar().c_str();
 		FileMgr::Init(documents);
 
-		LogHelper::Init("YimMenuV2", FileMgr::GetProjectFile("./cout.log"));
+		LogHelper::Init(YimMenu::SCVar().c_str(), FileMgr::GetProjectFile("./cout.log"));
 
 		g_HotkeySystem.RegisterCommands();
 		SavedLocations::FetchSavedLocations();
@@ -65,8 +65,11 @@ namespace YimMenu
 
 		if (!Pointers.LateInit())
 			LOG(WARNING) << "Socialclub patterns failed to load";
-
-		Notifications::Show("YimMenuV2", "Loaded succesfully", NotificationType::Success);
+		if (!Pointers.isSCDataValid())
+		{
+			std::exit(EXIT_FAILURE);
+		}
+		Notifications::Show(YimMenu::SCVar().c_str(), "Loaded succesfully", NotificationType::Success);
 
 		while (g_Running)
 		{
@@ -81,7 +84,7 @@ namespace YimMenu
 		Hooking::Destroy();
 		CallSiteHook::Destroy();
 
-EARLY_UNLOAD:
+	EARLY_UNLOAD:
 		g_Running = false;
 		Renderer::Destroy();
 		LogHelper::Destroy();

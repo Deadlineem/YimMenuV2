@@ -1,4 +1,5 @@
 #include "UIManager.hpp"
+#include "game/pointers/Pointers.hpp"
 
 namespace YimMenu
 {
@@ -31,7 +32,7 @@ namespace YimMenu
 		}
 		ImGui::EndChild();
 		
-		ImGui::Text("YimMenuV2");
+		ImGui::Text(YimMenu::SCVar().c_str());
 
 		pos.y -= 28;
 		ImGui::SetCursorPos(ImVec2(pos.x + 130, pos.y));

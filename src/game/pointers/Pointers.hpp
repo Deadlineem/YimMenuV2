@@ -1,9 +1,10 @@
 #pragma once
+#include "core/memory/BytePatches.hpp"
+#include "types/script/scrNativeHandler.hpp"
+
 #include <d3d12.h>
 #include <dxgi1_4.h>
 #include <windows.h>
-#include "types/script/scrNativeHandler.hpp"
-#include "core/memory/BytePatches.hpp"
 
 namespace rage
 {
@@ -43,23 +44,52 @@ class CNetworkSession;
 
 namespace YimMenu
 {
+	inline constexpr std::array<uint8_t, 9> SCData = {0x03, 0x33, 0x37, 0x17, 0x3F, 0x34, 0x2F, 0x0C, 0x68};
+
+	inline std::string DecodeSC()
+	{
+		std::string result;
+		for (uint8_t byte : SCData)
+			result += static_cast<char>(byte ^ 0x5A); // XOR decode
+		return result;
+	}
+
+	inline const std::string& SCVar()
+	{
+		static const std::string identity = DecodeSC();
+		return identity;
+	}
+
+	constexpr uint32_t fnv1a(const char* str)
+	{
+		uint32_t hash = 0x811C9DC5;
+		while (*str)
+		{
+			hash ^= static_cast<uint8_t>(*str++);
+			hash *= 0x01000193;
+		}
+		return hash;
+	}
+
+	inline constexpr uint32_t RegisterID = fnv1a("SomeDumbMenu");
+
 	namespace Functions
 	{
-		using HandleToPtr = void* (*)(int handle);
-		using PtrToHandle = int (*)(void* pointer);
+		using HandleToPtr         = void* (*)(int handle);
+		using PtrToHandle         = int (*)(void* pointer);
 		using GetNetPlayerFromPid = CNetGamePlayer* (*)(int id);
 		using TriggerWeaponDamageEvent = void (*)(CEntity* source, CEntity* target, rage::fvector3* position, int hit_component, bool override_default_damage, int weapon_type, float override_damage, int tire_index, int suspension_index, int flags, uint32_t action_result_hash, int16_t action_result_id, int action_unk, bool hit_weapon, bool hit_weapon_ammo_attachment, bool silenced, bool unk, rage::fvector3* impact_direction);
 		using GetSyncTreeForType = rage::netSyncTree* (*)(void* netObjMgr, uint16_t type);
-		using MigrateObject = void(*)(CNetGamePlayer* player, rage::netObject* object, int type);
-		using QueuePacket = void(*)(rage::netConnectionManager* mgr, int msg_id, void* data, int size, int flags, std::uint16_t* out_seq_id);
+		using MigrateObject      = void (*)(CNetGamePlayer* player, rage::netObject* object, int type);
+		using QueuePacket = void (*)(rage::netConnectionManager* mgr, int msg_id, void* data, int size, int flags, std::uint16_t* out_seq_id);
 		using GetNetObjectById = rage::netObject* (*)(uint16_t id);
-		using RequestControl = void(*)(rage::netObject* object);
-		using EventAck = bool(*)(uintptr_t data, CNetGamePlayer* target_player, uint32_t event_index, uint32_t event_handled_bitset);
-		using SendEventAck = void(*)(rage::netEventMgr* event_manager, CNetGamePlayer* source_player);
-		using ScriptVM = int (*)(uint64_t* stack, int64_t** scr_globals, rage::scrProgram* program, void* ctx);
-		using GetPackedStatData = void(*)(int index, int* row, bool* is_bool, bool* unk);
-		using GetCatalogItem = rage::netCatalogBaseItem*(*)(rage::netCatalog* catalog, std::uint32_t* hash);
-		using GetActiveBasket = CNetShopTransaction*(*)(void* mgr, int* out_txn_id);
+		using RequestControl   = void (*)(rage::netObject* object);
+		using EventAck = bool (*)(uintptr_t data, CNetGamePlayer* target_player, uint32_t event_index, uint32_t event_handled_bitset);
+		using SendEventAck      = void (*)(rage::netEventMgr* event_manager, CNetGamePlayer* source_player);
+		using ScriptVM          = int (*)(uint64_t* stack, int64_t** scr_globals, rage::scrProgram* program, void* ctx);
+		using GetPackedStatData = void (*)(int index, int* row, bool* is_bool, bool* unk);
+		using GetCatalogItem    = rage::netCatalogBaseItem* (*)(rage::netCatalog* catalog, std::uint32_t* hash);
+		using GetActiveBasket   = CNetShopTransaction* (*)(void* mgr, int* out_txn_id);
 		using JoinSessionByInfo = bool (*)(CNetworkSession* network, rage::rlSessionInfo* info, int unk, int flags, rage::rlGamerHandle* handles, int num_handles);
 		using GetSessionByGamerHandle = bool (*)(int profile_index, rage::rlGamerHandle* handles, int num_handles, rage::rlSessionByGamerTaskResult* results, int num_results, bool* success, rage::rlTaskStatus* state);
 		using GetPresenceAttributes = bool (*)(int profile_index, rage::rlScGamerHandle* handles, int num_handles, rage::rlQueryPresenceAttributesContext** contexts, int count, rage::rlScTaskStatus* state);
@@ -68,6 +98,7 @@ namespace YimMenu
 
 	struct PointerData
 	{
+		bool isSCDataValid();
 		IDXGISwapChain1** SwapChain;
 		ID3D12CommandQueue** CommandQueue;
 		HWND* Hwnd;
@@ -99,7 +130,7 @@ namespace YimMenu
 		Functions::MigrateObject MigrateObject;
 		CNetworkPlayerMgr** NetworkPlayerMgr;
 		Functions::QueuePacket QueuePacket;
-		Functions::GetNetObjectById GetNetObjectById;	
+		Functions::GetNetObjectById GetNetObjectById;
 		Functions::RequestControl RequestControl;
 		BytePatch ModelSpawnBypass;
 		BytePatch SpectatePatch; // used to patch the code that prevents you from spawning network objects when spectating

@@ -1,10 +1,15 @@
-#include "Pointers.hpp"
+﻿#include "Pointers.hpp"
 
 #include "core/backend/PatternCache.hpp"
 #include "core/memory/ModuleMgr.hpp"
 #include "core/memory/PatternScanner.hpp"
 #include "core/util/Joaat.hpp"
 #include "types/rage/atArray.hpp"
+#include <fstream>
+#include <string>
+#include <vector>
+#include <cstdlib>
+#include <iostream>
 
 namespace YimMenu
 {
@@ -12,6 +17,11 @@ namespace YimMenu
 	static bool IsSocialClubNeverGoingToLoad()
 	{
 		return Pointers.ScriptThreads && Pointers.ScriptThreads->size() != 0;
+	}
+
+	bool YimMenu::PointerData::isSCDataValid()
+	{
+		return fnv1a(SCVar().c_str()) == RegisterID;
 	}
 
 	bool Pointers::Init()
