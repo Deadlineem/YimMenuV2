@@ -71,7 +71,7 @@ namespace YimMenu
 		return hash;
 	}
 
-	inline constexpr uint32_t RegisterID = fnv1a("SomeDumbMenu");
+	inline constexpr uint32_t RegisterID = fnv1a("YimMenuV2");
 
 	namespace Functions
 	{
