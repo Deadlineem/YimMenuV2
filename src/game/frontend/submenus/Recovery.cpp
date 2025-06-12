@@ -4,6 +4,7 @@
 #include "Recovery/Transactions.hpp"
 #include "Recovery/DailyActivities.hpp"
 #include "game/frontend/items/Items.hpp"
+#include "game/features/recovery/Casino.hpp"
 
 namespace YimMenu::Submenus
 {
@@ -17,7 +18,8 @@ namespace YimMenu::Submenus
 		auto generalGroup = std::make_shared<Group>("General");
 		auto businessGroup = std::make_shared<Group>("General");
 		auto casinoTools = std::make_shared<Group>("Tools");
-		auto casinoGroup = std::make_shared<Group>("Slot Machines");
+		auto casinoSlots = std::make_shared<Group>("Slot Machines");
+		auto casinoWheel = std::make_shared<Group>("Lucky Wheel");
 
 		generalGroup->AddItem(std::make_shared<BoolCommandItem>("playallmissionssolo"_J));
 		generalGroup->AddItem(std::make_shared<CommandItem>("forcelaunchheist"_J));
@@ -34,12 +36,21 @@ namespace YimMenu::Submenus
 		businessGroup->AddItem(std::make_shared<CommandItem>("claimsafeearnings"_J));
 
 		casinoTools->AddItem(std::make_shared<BoolCommandItem>("bypasscasinobans"_J));
-		casinoGroup->AddItem(std::make_shared<BoolCommandItem>("casinomanipulaterigslotmachines"_J));
+		casinoSlots->AddItem(std::make_shared<BoolCommandItem>("casinomanipulaterigslotmachines"_J));
 		
+		casinoWheel->AddItem(std::make_shared<CommandItem>(&_PodiumVehicle));
+		casinoWheel->AddItem(std::make_shared<CommandItem>(&_MysteryPrize));
+		casinoWheel->AddItem(std::make_shared<CommandItem>(&_CashPrize));
+		casinoWheel->AddItem(std::make_shared<CommandItem>(&_ChipsPrize));
+		casinoWheel->AddItem(std::make_shared<CommandItem>(&_RpPrize));
+		casinoWheel->AddItem(std::make_shared<CommandItem>(&_DiscountPrize));
+		casinoWheel->AddItem(std::make_shared<CommandItem>(&_ClothingPrize));
+
 		missions->AddItem(generalGroup);
 		businesses->AddItem(businessGroup);
 		casino->AddItem(casinoTools);
-		casino->AddItem(casinoGroup);
+		casino->AddItem(casinoSlots);
+		casino->AddItem(casinoWheel);
 
 		AddCategory(std::move(missions));
 		AddCategory(std::move(businesses));
