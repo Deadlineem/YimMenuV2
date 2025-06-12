@@ -27,7 +27,8 @@ namespace YimMenu::Features
 		virtual void OnDisable() override
 		{
 			// This may need some values, but will work as is for now.
-		};
+		}
+	};
 	class CasinoManipulateRigSlotMachines : public LoopedCommand
 	{
 		using LoopedCommand::LoopedCommand;
@@ -98,7 +99,7 @@ namespace YimMenu::Features
 		}
 	};
 
-	static BypassCasinoBans _BypassCasinoBans{"bypasscasinobans", "Bypass Casino Ban", "Bypasses the Casino Ban and cooldown allowing you to manipulate the machines/tables as much as you want."};
+	static BypassCasinoBans _BypassCasinoBans{"bypasscasinobans", "Bypass Casino Ban", "Bypasses the Casino Ban and cooldown allowing you to manipulate the machines/tables as much as you want"};
 	static CasinoManipulateRigSlotMachines _CasinoManipulateRigSlotMachines{"casinomanipulaterigslotmachines", "Manipulate Rig Slot Machines", "Lets you win the Rig Slot Machines every time"};
 
 }
