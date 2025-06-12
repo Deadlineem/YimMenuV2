@@ -38,13 +38,14 @@ namespace YimMenu::Submenus
 		casinoTools->AddItem(std::make_shared<BoolCommandItem>("bypasscasinobans"_J));
 		casinoSlots->AddItem(std::make_shared<BoolCommandItem>("casinomanipulaterigslotmachines"_J));
 		
-		casinoWheel->AddItem(std::make_shared<CommandItem>(&_PodiumVehicle));
-		casinoWheel->AddItem(std::make_shared<CommandItem>(&_MysteryPrize));
-		casinoWheel->AddItem(std::make_shared<CommandItem>(&_CashPrize));
-		casinoWheel->AddItem(std::make_shared<CommandItem>(&_ChipsPrize));
-		casinoWheel->AddItem(std::make_shared<CommandItem>(&_RpPrize));
-		casinoWheel->AddItem(std::make_shared<CommandItem>(&_DiscountPrize));
-		casinoWheel->AddItem(std::make_shared<CommandItem>(&_ClothingPrize));
+		casinoWheel->AddItem(std::make_shared<CommandItem>("wheelpodium"_J));ImGui::SameLine();
+		casinoWheel->AddItem(std::make_shared<CommandItem>("wheelmystery"_J));ImGui::SameLine();
+		casinoWheel->AddItem(std::make_shared<CommandItem>("wheelcash"_J));ImGui::SameLine();
+		casinoWheel->AddItem(std::make_shared<CommandItem>("wheelchips"_J));
+		casinoWheel->AddItem(std::make_shared<CommandItem>("wheelrp"_J));
+		casinoWheel->AddItem(std::make_shared<CommandItem>("wheeldiscount"_J));
+		casinoWheel->AddItem(std::make_shared<CommandItem>("wheelclothing"_J));
+
 
 		missions->AddItem(generalGroup);
 		businesses->AddItem(businessGroup);

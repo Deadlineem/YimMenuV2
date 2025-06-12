@@ -1,9 +1,9 @@
 #pragma once
-#include "core/commands/Command.hpp" // Adjust this include to the actual path
+#include "core/commands/Command.hpp"
 
 namespace YimMenu::Features
 {
-	class SetLuckyWheelPrizeCommand : Command
+	class SetLuckyWheelPrizeCommand : public Command
 	{
 	public:
 		SetLuckyWheelPrizeCommand(const std::string& name, const std::string& label, const std::string& description, int prizeValue);
@@ -15,6 +15,7 @@ namespace YimMenu::Features
 		int m_PrizeValue;
 	};
 
+	// Declare the instances (they'll be defined in .cpp)
 	extern SetLuckyWheelPrizeCommand _PodiumVehicle;
 	extern SetLuckyWheelPrizeCommand _MysteryPrize;
 	extern SetLuckyWheelPrizeCommand _CashPrize;
