@@ -2,12 +2,32 @@
 #include "game/backend/Self.hpp"
 #include "game/gta/Natives.hpp"
 #include "game/gta/ScriptLocal.hpp"
+#include "game/gta/Stats.hpp"
 
 #include <set>
 
 
 namespace YimMenu::Features
 {
+	class BypassCasinoBans : public LoopedCommand
+	{
+		using LoopedCommand::LoopedCommand;
+		virtual void OnTick() override
+		{
+			// Bypass Casino Bans
+			Stats::SetInt("MPPLY_CASINO_CHIPS_WON_GD", 0);
+			Stats::SetInt("MPPLY_CASINO_CHIPS_WONTIM", 0);
+			Stats::SetInt("MPPLY_CASINO_GMBLNG_GD", 0);
+			Stats::SetInt("MPPLY_CASINO_BAN_TIME", 0);
+			Stats::SetInt("MPPLY_CASINO_CHIPS_PURTIM", 0);
+			Stats::SetInt("MPPLY_CASINO_CHIPS_PUR_GD", 0);
+			Stats::SetInt("MPPLY_CASINO_CHIPS_SOLD", 0);
+			Stats::SetInt("MPPLY_CASINO_CHIPS_SELTIM", 0);
+		}
+		virtual void OnDisable() override
+		{
+			// This may need some values, but will work as is for now.
+		};
 	class CasinoManipulateRigSlotMachines : public LoopedCommand
 	{
 		using LoopedCommand::LoopedCommand;
@@ -78,6 +98,7 @@ namespace YimMenu::Features
 		}
 	};
 
+	static BypassCasinoBans _BypassCasinoBans{"bypasscasinobans", "Bypass Casino Ban", "Bypasses the Casino Ban and cooldown allowing you to manipulate the machines/tables as much as you want."};
 	static CasinoManipulateRigSlotMachines _CasinoManipulateRigSlotMachines{"casinomanipulaterigslotmachines", "Manipulate Rig Slot Machines", "Lets you win the Rig Slot Machines every time"};
 
 }

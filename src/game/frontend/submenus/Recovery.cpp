@@ -32,8 +32,9 @@ namespace YimMenu::Submenus
 		businessGroup->AddItem(std::make_shared<ListCommandItem>("businesssafe"_J));
 		businessGroup->AddItem(std::make_shared<CommandItem>("claimsafeearnings"_J));
 
+		casinoGroup->AddItem(std::make_shared<BoolCommandItem>("bypasscasinobans"_J));
 		casinoGroup->AddItem(std::make_shared<BoolCommandItem>("casinomanipulaterigslotmachines"_J));
-
+		
 		missions->AddItem(generalGroup);
 		businesses->AddItem(businessGroup);
 		casino->AddItem(casinoGroup);
