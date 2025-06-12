@@ -4,6 +4,7 @@
 #include "game/gta/ScriptLocal.hpp"
 #include "game/gta/Stats.hpp"
 #include "core/commands/ListCommand.hpp"
+#include "game/backend/Tunables.hpp"
 
 #include <set>
 
@@ -15,7 +16,10 @@ namespace YimMenu::Features
 		using LoopedCommand::LoopedCommand;
 		virtual void OnTick() override
 		{
-			// Bypass Casino Bans
+			static Tunable addSpins("VC_LUCKY_WHEEL_ADDITIONAL_SPINS_ENABLE"_J);
+			static Tunable spinsPerDay("VC_LUCKY_WHEEL_NUM_SPINS_PER_DAY"_J);
+
+			// Bypass Casino Slots and Tables Ban/Cooldown
 			Stats::SetInt("MPPLY_CASINO_CHIPS_WON_GD", 0);
 			Stats::SetInt("MPPLY_CASINO_CHIPS_WONTIM", 0);
 			Stats::SetInt("MPPLY_CASINO_GMBLNG_GD", 0);
@@ -24,6 +28,12 @@ namespace YimMenu::Features
 			Stats::SetInt("MPPLY_CASINO_CHIPS_PUR_GD", 0);
 			Stats::SetInt("MPPLY_CASINO_CHIPS_SOLD", 0);
 			Stats::SetInt("MPPLY_CASINO_CHIPS_SELTIM", 0);
+
+			if (addSpins.IsReady() && spinsPerDay.IsReady())
+			{
+				addSpins.Set(1);
+				spinsPerDay.Set(99);
+			}
 		}
 		virtual void OnDisable() override
 		{
@@ -145,7 +155,7 @@ namespace YimMenu::Features
 	};
 
 	static ApplyLuckyWheelPrize _ApplyLuckyWheelPrize{"applyluckywheelprize", "Set Prize", "Sets the wheel to land on the selected Lucky Wheel prize"};
-	static BypassCasinoBans _BypassCasinoBans{"bypasscasinobans", "Bypass Casino Ban", "Bypasses the Casino Ban and cooldown allowing you to manipulate the machines/tables as much as you want"};
+	static BypassCasinoBans _BypassCasinoBans{"bypasscasinobans", "Bypass Casino Ban", "Bypasses the Casino Ban and cooldowns for everything (wheel/slots/tables/cashier)"};
 	static CasinoManipulateRigSlotMachines _CasinoManipulateRigSlotMachines{"casinomanipulaterigslotmachines", "Manipulate Rig Slot Machines", "Lets you win the Rig Slot Machines every time"};
 
 }
