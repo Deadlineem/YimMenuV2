@@ -1,10 +1,9 @@
 #include "core/commands/LoopedCommand.hpp"
-#include "core/commands/Command.hpp"
 #include "game/backend/Self.hpp"
 #include "game/gta/Natives.hpp"
 #include "game/gta/ScriptLocal.hpp"
 #include "game/gta/Stats.hpp"
-#include "game/features/recovery/Casino.hpp"
+#include "core/commands/ListCommand.hpp"
 
 #include <set>
 
@@ -100,40 +99,52 @@ namespace YimMenu::Features
 			}
 		}
 	};
-	// TODO: Needs improvement, this does not give the reward immediately, it still makes you spin the wheel for it.
-	constexpr int prize_offset = 280 + 14;
-	constexpr int state_offset = 280 + 45;
-
-	SetLuckyWheelPrizeCommand _PodiumVehicle("wheelpodium", "Give Podium Vehicle", "Sets prize to Podium Vehicle", 18);
-	SetLuckyWheelPrizeCommand _MysteryPrize("wheelmystery", "Give Mystery Prize", "Sets prize to Mystery Prize", 11);
-	SetLuckyWheelPrizeCommand _CashPrize("wheelcash", "Give $50,000", "Sets prize to $50,000 cash", 19);
-	SetLuckyWheelPrizeCommand _ChipsPrize("wheelchips", "Give 25,000 Chips", "Sets prize to 25,000 chips", 15);
-	SetLuckyWheelPrizeCommand _RpPrize("wheelrp", "Give 15,000 RP", "Sets prize to 15,000 RP", 17);
-	SetLuckyWheelPrizeCommand _DiscountPrize("wheeldiscount", "Give Discount", "Sets prize to discount", 4);
-	SetLuckyWheelPrizeCommand _ClothingPrize("wheelclothing", "Give Clothing", "Sets prize to clothing", 8);
-
-	SetLuckyWheelPrizeCommand::SetLuckyWheelPrizeCommand(
-	    const std::string& name,
-	    const std::string& label,
-	    const std::string& description,
-	    int prizeValue) :
-	    Command(name, label, description, 0),
-	    m_PrizeValue(prizeValue)
+	enum class eLuckyWheelPrize
 	{
-	}
+		PODIUM_VEHICLE = 18,
+		MYSTERY = 11,
+		CASH = 19,
+		CHIPS = 15,
+		RP = 17,
+		DISCOUNT = 4,
+		CLOTHING = 8
+	};
 
-	void SetLuckyWheelPrizeCommand::OnCall()
+	static std::vector<std::pair<int, const char*>> luckyWheelPrizes = {
+	    {static_cast<int>(eLuckyWheelPrize::PODIUM_VEHICLE), "Podium Vehicle"},
+	    {static_cast<int>(eLuckyWheelPrize::MYSTERY), "Mystery Prize"},
+	    {static_cast<int>(eLuckyWheelPrize::CASH), "$50,000 Cash"},
+	    {static_cast<int>(eLuckyWheelPrize::CHIPS), "25,000 Chips"},
+	    {static_cast<int>(eLuckyWheelPrize::RP), "15,000 RP"},
+	    {static_cast<int>(eLuckyWheelPrize::DISCOUNT), "Discount"},
+	    {static_cast<int>(eLuckyWheelPrize::CLOTHING), "Clothing"}
+	};
+
+	static ListCommand _SelectedLuckyWheelPrize{"luckywheelprize", "Wheel Prize", "Select prize for Lucky Wheel", luckyWheelPrizes, 0};
+
+	class ApplyLuckyWheelPrize : public Command
 	{
-		if (Scripts::SafeToModifyFreemodeBroadcastGlobals() && SCRIPT::GET_NUMBER_OF_THREADS_RUNNING_THE_SCRIPT_WITH_THIS_HASH("casino_lucky_wheel"_J))
+		using Command::Command;
+
+		virtual void OnCall() override
 		{
-			Player luckyWheelScriptHostPlayer = NETWORK::NETWORK_GET_HOST_OF_SCRIPT("casino_lucky_wheel", -1, 0);
-			if (luckyWheelScriptHostPlayer.GetId() != Self::GetPlayer().GetId())
-				Scripts::ForceScriptHost(Scripts::FindScriptThread("casino_lucky_wheel"_J));
+			if (Scripts::SafeToModifyFreemodeBroadcastGlobals() && SCRIPT::GET_NUMBER_OF_THREADS_RUNNING_THE_SCRIPT_WITH_THIS_HASH("casino_lucky_wheel"_J))
+			{
+				Player host = NETWORK::NETWORK_GET_HOST_OF_SCRIPT("casino_lucky_wheel", -1, 0);
+				if (host.GetId() != Self::GetPlayer().GetId())
+					Scripts::ForceScriptHost(Scripts::FindScriptThread("casino_lucky_wheel"_J));
 
-			*ScriptLocal("casino_lucky_wheel"_J, prize_offset).As<int*>() = m_PrizeValue;
-			*ScriptLocal("casino_lucky_wheel"_J, state_offset).As<int*>() = 11;
+				constexpr int prize_offset = 280 + 14;
+				constexpr int state_offset = 280 + 45;
+
+				int selectedPrize = _SelectedLuckyWheelPrize.GetState();
+				*ScriptLocal("casino_lucky_wheel"_J, prize_offset).As<int*>() = selectedPrize;
+				*ScriptLocal("casino_lucky_wheel"_J, state_offset).As<int*>() = 11;
+			}
 		}
-	}
+	};
+
+	static ApplyLuckyWheelPrize _ApplyLuckyWheelPrize{"applyluckywheelprize", "Set Prize", "Sets the wheel to land on the selected Lucky Wheel prize"};
 	static BypassCasinoBans _BypassCasinoBans{"bypasscasinobans", "Bypass Casino Ban", "Bypasses the Casino Ban and cooldown allowing you to manipulate the machines/tables as much as you want"};
 	static CasinoManipulateRigSlotMachines _CasinoManipulateRigSlotMachines{"casinomanipulaterigslotmachines", "Manipulate Rig Slot Machines", "Lets you win the Rig Slot Machines every time"};
 

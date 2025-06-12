@@ -4,7 +4,6 @@
 #include "Recovery/Transactions.hpp"
 #include "Recovery/DailyActivities.hpp"
 #include "game/frontend/items/Items.hpp"
-#include "game/features/recovery/Casino.hpp"
 
 namespace YimMenu::Submenus
 {
@@ -36,15 +35,11 @@ namespace YimMenu::Submenus
 		businessGroup->AddItem(std::make_shared<CommandItem>("claimsafeearnings"_J));
 
 		casinoTools->AddItem(std::make_shared<BoolCommandItem>("bypasscasinobans"_J));
+
 		casinoSlots->AddItem(std::make_shared<BoolCommandItem>("casinomanipulaterigslotmachines"_J));
 		
-		casinoWheel->AddItem(std::make_shared<CommandItem>("wheelpodium"_J));ImGui::SameLine();
-		casinoWheel->AddItem(std::make_shared<CommandItem>("wheelmystery"_J));ImGui::SameLine();
-		casinoWheel->AddItem(std::make_shared<CommandItem>("wheelcash"_J));ImGui::SameLine();
-		casinoWheel->AddItem(std::make_shared<CommandItem>("wheelchips"_J));
-		casinoWheel->AddItem(std::make_shared<CommandItem>("wheelrp"_J));
-		casinoWheel->AddItem(std::make_shared<CommandItem>("wheeldiscount"_J));
-		casinoWheel->AddItem(std::make_shared<CommandItem>("wheelclothing"_J));
+		casinoWheel->AddItem(std::make_shared<ListCommandItem>("luckywheelprize"_J));
+		casinoWheel->AddItem(std::make_shared<CommandItem>("applyluckywheelprize"_J));
 
 
 		missions->AddItem(generalGroup);
