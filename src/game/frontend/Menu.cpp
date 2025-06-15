@@ -110,6 +110,7 @@ namespace YimMenu
 		Menu::Font::g_OverlayFont = IO.Fonts->AddFontFromMemoryTTF(const_cast<std::uint8_t*>(Fonts::MainFont), sizeof(Fonts::MainFont), Menu::Font::g_OverlayFontSize, &FontCfg);
 		static const ImWchar full_range[] = {0x0020, 0xFFFF, 0};
 		Menu::Font::g_AwesomeFont = IO.Fonts->AddFontFromMemoryTTF(const_cast<std::uint8_t*>(Fonts::IconFont), sizeof(Fonts::IconFont), Menu::Font::g_AwesomeFontSize, &FontCfg, full_range);
+    
 		UIManager::SetOptionsFont(Menu::Font::g_OptionsFont);
 	}
 }
