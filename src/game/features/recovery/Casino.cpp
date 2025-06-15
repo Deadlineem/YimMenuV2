@@ -19,7 +19,6 @@ namespace YimMenu::Features
 			static Tunable addSpins("VC_LUCKY_WHEEL_ADDITIONAL_SPINS_ENABLE"_J);
 			static Tunable spinsPerDay("VC_LUCKY_WHEEL_NUM_SPINS_PER_DAY"_J);
 
-			// Bypass Casino Slots and Tables Ban/Cooldown
 			Stats::SetInt("MPPLY_CASINO_CHIPS_WON_GD", 0);
 			Stats::SetInt("MPPLY_CASINO_CHIPS_WONTIM", 0);
 			Stats::SetInt("MPPLY_CASINO_GMBLNG_GD", 0);
@@ -110,8 +109,6 @@ namespace YimMenu::Features
 		}
 	};
 
-	//static CasinoAutoSpin _CasinoAutoSpin{"casinoautospin", "Auto Spin Slots", "Automatically spins slot machine when seated."};
-	//static ApplyLuckyWheelPrize _ApplyLuckyWheelPrize{"applyluckywheelprize", "Set Prize", "Sets the wheel to land on the selected Lucky Wheel prize"};
-	static BypassCasinoBans _BypassCasinoBans{"bypasscasinobans", "Bypass Casino Ban", "Bypasses the Casino Ban and cooldowns for everything (wheel/slots/tables/cashier)"};
+	static BypassCasinoBans _BypassCasinoBans{"bypasscasinobans", "Bypass Casino Ban", "SEVERELY RISKY! Bypasses the Casino Ban and cooldowns for everything (wheel/slots/tables/cashier)"};
 	static CasinoManipulateRigSlotMachines _CasinoManipulateRigSlotMachines{"casinomanipulaterigslotmachines", "Manipulate Rig Slot Machines", "Lets you win the Rig Slot Machines every time"};
 }
