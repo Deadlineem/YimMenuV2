@@ -38,15 +38,15 @@ namespace YimMenu::Submenus
 
 		casinoSlots->AddItem(std::make_shared<BoolCommandItem>("casinomanipulaterigslotmachines"_J));
 		
-		casinoWheel->AddItem(std::make_shared<ListCommandItem>("luckywheelprize"_J));
-		casinoWheel->AddItem(std::make_shared<CommandItem>("applyluckywheelprize"_J));
+		//casinoWheel->AddItem(std::make_shared<ListCommandItem>("luckywheelprize"_J));
+		//casinoWheel->AddItem(std::make_shared<CommandItem>("applyluckywheelprize"_J));
 
 
 		missions->AddItem(generalGroup);
 		businesses->AddItem(businessGroup);
 		casino->AddItem(casinoTools);
 		casino->AddItem(casinoSlots);
-		casino->AddItem(casinoWheel);
+		//casino->AddItem(casinoWheel);
 
 		AddCategory(std::move(missions));
 		AddCategory(std::move(businesses));
