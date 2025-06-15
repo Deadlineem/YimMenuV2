@@ -83,9 +83,9 @@ namespace YimMenu
 		ToggleMouse();
 	}
 
-	/* void GUI::RunScriptImpl()
+	void GUI::RunScriptImpl()
 	{
-		while (g_Running)
+		/* while (g_Running)
 		{
 			if (GUI::IsOpen())
 			{
@@ -103,6 +103,6 @@ namespace YimMenu
 			}
 
 			ScriptMgr::Yield();
-		}
-	}*/
+		}*/
+	}
 }
