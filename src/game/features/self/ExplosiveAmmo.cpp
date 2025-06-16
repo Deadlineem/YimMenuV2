@@ -4,6 +4,7 @@
 #include "types/fx/ExplosionType.hpp"
 #include <game/gta/Natives.hpp>
 #include "core/commands/ListCommand.hpp"
+#include "core/commands/FloatCommand.hpp"
 #include "core/util/magic_enum.hpp"
 
 namespace YimMenu::Features
@@ -22,6 +23,8 @@ namespace YimMenu::Features
 	}
 
 	static ListCommand _SelectedExplosion{"selectedexplosion", "Explosion Type", "Select an explosion type", GetExplosionTypes(), static_cast<int>(ExplosionType::BULLET)};
+	static FloatCommand _ExplosionDamageScale{"explosiondamage", "Explosion Damage Scale", "Sets the damage scale for explosions", 0.0f, 1000.0f, 1.0f};
+	static FloatCommand _CameraShake{"explosioncamerashake", "Explosion Camera Shake", "Controls how much the camera shakes during explosions", 0.0f, 10.0f, 0.1f};
 
 	class ExplosiveAmmo : public LoopedCommand
 	{
@@ -44,18 +47,19 @@ namespace YimMenu::Features
 			{
 				int selected = _SelectedExplosion.GetState();
 				auto explosionType = static_cast<ExplosionType>(selected);
+				float explosionDamageScale = _ExplosionDamageScale.GetState();
+				float cameraShake = _CameraShake.GetState();
 
 				FIRE::ADD_OWNED_EXPLOSION(
 				    Self::GetPed().GetHandle(),
 				    aimCoords.x,
 				    aimCoords.y,
 				    aimCoords.z,
-				    static_cast<int>(explosionType), // explosionType
-				    100.0f,                          // damageScale
-				    true,                            // isAudible
-				    false,                           // isInvisible
-				    0.1f                             // cameraShake
-				);
+				    static_cast<int>(explosionType),
+				    explosionDamageScale,
+				    true,  // isAudible
+				    false, // isInvisible
+				    cameraShake);
 			}
 		}
 	};

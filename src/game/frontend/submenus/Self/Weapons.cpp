@@ -177,7 +177,10 @@ namespace YimMenu::Submenus
 		weaponsGlobalsGroup->AddItem(std::make_shared<BoolCommandItem>("rapidfire"_J));
 		weaponsGlobalsGroup->AddItem(std::make_shared<BoolCommandItem>("infiniteparachutes"_J));
 		weaponsGlobalsGroup->AddItem(std::make_shared<BoolCommandItem>("ExplosiveAmmo"_J));
-		weaponsGlobalsGroup->AddItem(std::make_shared<ListCommandItem>("selectedexplosion"_J));
+		weaponsGlobalsGroup->AddItem(std::make_shared<ConditionalItem>("ExplosiveAmmo"_J, std::make_shared<ListCommandItem>("selectedexplosion"_J)));
+		weaponsGlobalsGroup->AddItem(std::make_shared<ConditionalItem>("ExplosiveAmmo"_J, std::make_shared<FloatCommandItem>("explosiondamage"_J, std::nullopt, false)));
+		weaponsGlobalsGroup->AddItem(std::make_shared<ConditionalItem>("ExplosiveAmmo"_J, std::make_shared<FloatCommandItem>("explosioncamerashake"_J, std::nullopt, false)));
+		weaponsGlobalsGroup->AddItem(std::make_shared<ConditionalItem>("ExplosiveAmmo"_J, std::make_shared<FloatCommandItem>("weapondamage"_J, std::nullopt, false)));
 
 		weaponsToolsGroup->AddItem(std::make_shared<CommandItem>("giveallweapons"_J));
 		weaponsToolsGroup->AddItem(std::make_shared<CommandItem>("givemaxammo"_J));
