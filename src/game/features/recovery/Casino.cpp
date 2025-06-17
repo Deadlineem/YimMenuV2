@@ -39,6 +39,7 @@ namespace YimMenu::Features
 			// This may need some values, but will work as is for now.
 		}
 	};
+
 	class CasinoManipulateRigSlotMachines : public LoopedCommand
 	{
 		using LoopedCommand::LoopedCommand;
