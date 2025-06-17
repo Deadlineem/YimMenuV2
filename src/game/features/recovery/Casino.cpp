@@ -11,35 +11,6 @@
 
 namespace YimMenu::Features
 {
-	class BypassCasinoBans : public LoopedCommand
-	{
-		using LoopedCommand::LoopedCommand;
-		virtual void OnTick() override
-		{
-			static Tunable addSpins("VC_LUCKY_WHEEL_ADDITIONAL_SPINS_ENABLE"_J);
-			static Tunable spinsPerDay("VC_LUCKY_WHEEL_NUM_SPINS_PER_DAY"_J);
-
-			Stats::SetInt("MPPLY_CASINO_CHIPS_WON_GD", 0);
-			Stats::SetInt("MPPLY_CASINO_CHIPS_WONTIM", 0);
-			Stats::SetInt("MPPLY_CASINO_GMBLNG_GD", 0);
-			Stats::SetInt("MPPLY_CASINO_BAN_TIME", 0);
-			Stats::SetInt("MPPLY_CASINO_CHIPS_PURTIM", 0);
-			Stats::SetInt("MPPLY_CASINO_CHIPS_PUR_GD", 0);
-			Stats::SetInt("MPPLY_CASINO_CHIPS_SOLD", 0);
-			Stats::SetInt("MPPLY_CASINO_CHIPS_SELTIM", 0);
-
-			if (addSpins.IsReady() && spinsPerDay.IsReady())
-			{
-				addSpins.Set(1);
-				spinsPerDay.Set(99);
-			}
-		}
-		virtual void OnDisable() override
-		{
-			// This may need some values, but will work as is for now.
-		}
-	};
-
 	class CasinoManipulateRigSlotMachines : public LoopedCommand
 	{
 		using LoopedCommand::LoopedCommand;
@@ -110,6 +81,5 @@ namespace YimMenu::Features
 		}
 	};
 
-	static BypassCasinoBans _BypassCasinoBans{"bypasscasinobans", "Bypass Casino Ban", "SEVERELY RISKY! Bypasses the Casino Ban and cooldowns for everything (wheel/slots/tables/cashier)"};
 	static CasinoManipulateRigSlotMachines _CasinoManipulateRigSlotMachines{"casinomanipulaterigslotmachines", "Manipulate Rig Slot Machines", "Lets you win the Rig Slot Machines every time"};
 }
