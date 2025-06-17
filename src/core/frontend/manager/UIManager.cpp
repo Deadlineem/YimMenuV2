@@ -1,9 +1,6 @@
 #include "UIManager.hpp"
 #include "game/pointers/Pointers.hpp"
 #include "game/frontend/Menu.hpp"
-#include "game/gta/Natives.hpp"
-#include "types/pad/ControllerInputs.hpp"
-#include "core/backend/ScriptMgr.hpp"
 
 namespace YimMenu
 {
@@ -30,8 +27,6 @@ namespace YimMenu
 		float bgSize = 70.0f;
 		float rounding = 8.0f;
 		ImVec2 basePos((*Pointers.ScreenResX / 2.0f) - (bubbleSpacing * m_Submenus.size() / 2.0f), 80.0f);
-
-		static bool m_ShowContentWindow = false;
 
 		ImGui::SetNextWindowPos(ImVec2(0, 0));
 		ImGui::SetNextWindowSize(io.DisplaySize);
@@ -120,18 +115,6 @@ namespace YimMenu
 
 			if (ImGui::Begin("##Categories&Content", nullptr, flags))
 			{
-				if (GUI::IsUsingKeyboard())
-				{
-					PAD::DISABLE_ALL_CONTROL_ACTIONS(0);
-				}
-				else
-				{
-					static constexpr ControllerInputs controls[] = {ControllerInputs::INPUT_LOOK_LR, ControllerInputs::INPUT_LOOK_UD, ControllerInputs::INPUT_ATTACK, ControllerInputs::INPUT_AIM, ControllerInputs::INPUT_DUCK, ControllerInputs::INPUT_SELECT_WEAPON, ControllerInputs::INPUT_VEH_AIM, ControllerInputs::INPUT_VEH_ATTACK, ControllerInputs::INPUT_VEH_ATTACK2, ControllerInputs::INPUT_VEH_NEXT_RADIO, ControllerInputs::INPUT_VEH_PASSENGER_AIM, ControllerInputs::INPUT_VEH_PASSENGER_ATTACK, ControllerInputs::INPUT_VEH_SELECT_NEXT_WEAPON, ControllerInputs::INPUT_VEH_SELECT_PREV_WEAPON, ControllerInputs::INPUT_VEH_MOUSE_CONTROL_OVERRIDE, ControllerInputs::INPUT_MELEE_ATTACK_ALTERNATE, ControllerInputs::INPUT_FRONTEND_Y, ControllerInputs::INPUT_ATTACK2, ControllerInputs::INPUT_PREV_WEAPON, ControllerInputs::INPUT_NEXT_WEAPON, ControllerInputs::INPUT_VEH_DRIVE_LOOK, ControllerInputs::INPUT_VEH_DRIVE_LOOK2};
-
-					for (const auto& control : controls)
-						PAD::DISABLE_CONTROL_ACTION(0, static_cast<int>(control), true);
-				}
-
 				if (ImGui::BeginChild("##categorySelectors", ImVec2(0, 60), true))
 				{
 					m_ActiveSubmenu->DrawCategorySelectors();

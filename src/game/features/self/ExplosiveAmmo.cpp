@@ -30,11 +30,6 @@ namespace YimMenu::Features
 	{
 		using LoopedCommand::LoopedCommand;
 
-		virtual void OnEnable() override
-		{
-			TriggerExplosion();
-		}
-
 		virtual void OnTick() override
 		{
 			TriggerExplosion();

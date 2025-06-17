@@ -182,6 +182,8 @@ namespace YimMenu::Submenus
 		weaponsGlobalsGroup->AddItem(std::make_shared<ConditionalItem>("ExplosiveAmmo"_J, std::make_shared<FloatCommandItem>("explosioncamerashake"_J, std::nullopt, false)));
 		weaponsGlobalsGroup->AddItem(std::make_shared<BoolCommandItem>("weapondamage"_J));
 		weaponsGlobalsGroup->AddItem(std::make_shared<ConditionalItem>("weapondamage"_J, std::make_shared<FloatCommandItem>("weapondamagescale"_J, std::nullopt, false)));
+		weaponsGlobalsGroup->AddItem(std::make_shared<BoolCommandItem>("meleedamage"_J));
+		weaponsGlobalsGroup->AddItem(std::make_shared<ConditionalItem>("meleedamage"_J, std::make_shared<FloatCommandItem>("meleedamagescale"_J, std::nullopt, false)));
 
 		weaponsToolsGroup->AddItem(std::make_shared<CommandItem>("giveallweapons"_J));
 		weaponsToolsGroup->AddItem(std::make_shared<CommandItem>("givemaxammo"_J));

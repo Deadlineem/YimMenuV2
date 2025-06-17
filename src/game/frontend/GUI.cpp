@@ -1,3 +1,4 @@
+#include "core/frontend/manager/UIManager.hpp"
 #include "GUI.hpp"
 #include "Menu.hpp"
 #include "ESP.hpp"
@@ -86,24 +87,27 @@ namespace YimMenu
 
 	void GUI::RunScriptImpl()
 	{
-		//while (g_Running)
-		//{
-			//if (GUI::IsOpen())
-			//{
-				//if (GUI::IsUsingKeyboard())
-				//{
-					//PAD::DISABLE_ALL_CONTROL_ACTIONS(0);
-				//}
-				//else
-				//{
-					//static constexpr ControllerInputs controls[] = {ControllerInputs::INPUT_LOOK_LR, ControllerInputs::INPUT_LOOK_UD, ControllerInputs::INPUT_ATTACK, ControllerInputs::INPUT_AIM, ControllerInputs::INPUT_DUCK, ControllerInputs::INPUT_SELECT_WEAPON, ControllerInputs::INPUT_VEH_AIM, ControllerInputs::INPUT_VEH_ATTACK, ControllerInputs::INPUT_VEH_ATTACK2, ControllerInputs::INPUT_VEH_NEXT_RADIO, ControllerInputs::INPUT_VEH_PASSENGER_AIM, ControllerInputs::INPUT_VEH_PASSENGER_ATTACK, ControllerInputs::INPUT_VEH_SELECT_NEXT_WEAPON, ControllerInputs::INPUT_VEH_SELECT_PREV_WEAPON, ControllerInputs::INPUT_VEH_MOUSE_CONTROL_OVERRIDE, ControllerInputs::INPUT_MELEE_ATTACK_ALTERNATE, ControllerInputs::INPUT_FRONTEND_Y, ControllerInputs::INPUT_ATTACK2, ControllerInputs::INPUT_PREV_WEAPON, ControllerInputs::INPUT_NEXT_WEAPON, ControllerInputs::INPUT_VEH_DRIVE_LOOK, ControllerInputs::INPUT_VEH_DRIVE_LOOK2};
+		while (g_Running)
+		{
+			if (GUI::IsOpen())
+			{
+				if (UIManager::ShowingContentWindow())
+				{
+					if (GUI::IsUsingKeyboard())
+					{
+						PAD::DISABLE_ALL_CONTROL_ACTIONS(0);
+					}
+					else
+					{
+						static constexpr ControllerInputs controls[] = {ControllerInputs::INPUT_LOOK_LR, ControllerInputs::INPUT_LOOK_UD, ControllerInputs::INPUT_ATTACK, ControllerInputs::INPUT_AIM, ControllerInputs::INPUT_DUCK, ControllerInputs::INPUT_SELECT_WEAPON, ControllerInputs::INPUT_VEH_AIM, ControllerInputs::INPUT_VEH_ATTACK, ControllerInputs::INPUT_VEH_ATTACK2, ControllerInputs::INPUT_VEH_NEXT_RADIO, ControllerInputs::INPUT_VEH_PASSENGER_AIM, ControllerInputs::INPUT_VEH_PASSENGER_ATTACK, ControllerInputs::INPUT_VEH_SELECT_NEXT_WEAPON, ControllerInputs::INPUT_VEH_SELECT_PREV_WEAPON, ControllerInputs::INPUT_VEH_MOUSE_CONTROL_OVERRIDE, ControllerInputs::INPUT_MELEE_ATTACK_ALTERNATE, ControllerInputs::INPUT_FRONTEND_Y, ControllerInputs::INPUT_ATTACK2, ControllerInputs::INPUT_PREV_WEAPON, ControllerInputs::INPUT_NEXT_WEAPON, ControllerInputs::INPUT_VEH_DRIVE_LOOK, ControllerInputs::INPUT_VEH_DRIVE_LOOK2};
 
-					//for (const auto& control : controls)
-						//PAD::DISABLE_CONTROL_ACTION(0, static_cast<int>(control), true);
-				//}
-			//}
+						for (const auto& control : controls)
+							PAD::DISABLE_CONTROL_ACTION(0, static_cast<int>(control), true);
+					}
+				}
+			}
 
-			//ScriptMgr::Yield();
-		//}
+			ScriptMgr::Yield();
+		}
 	}
 }
