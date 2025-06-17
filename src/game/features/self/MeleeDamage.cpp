@@ -20,10 +20,6 @@ namespace YimMenu::Features
 
 		void applyForceToTarget(Hash target, float scale)
 		{
-			if (!ENTITY::DOES_ENTITY_EXIST(target))
-				return;
-
-			// Request control first
 			NETWORK::NETWORK_REQUEST_CONTROL_OF_ENTITY(target);
 
 			Vector3 from = ENTITY::GET_ENTITY_COORDS(Self::GetPed().GetHandle(), true);
@@ -34,7 +30,6 @@ namespace YimMenu::Features
 			    to.y - from.y,
 			    0.0f};
 
-			// Normalize direction vector
 			float len = std::sqrt(direction.x * direction.x + direction.y * direction.y);
 			if (len > 0.0f)
 			{
@@ -46,7 +41,6 @@ namespace YimMenu::Features
 			direction.x *= forceScale;
 			direction.y *= forceScale;
 
-			// Angular impulse upward
 			ENTITY::APPLY_FORCE_TO_ENTITY(
 			    target,
 			    0,
@@ -63,7 +57,6 @@ namespace YimMenu::Features
 			    false,
 			    true);
 
-			// Horizontal directional impulse
 			ENTITY::APPLY_FORCE_TO_ENTITY_CENTER_OF_MASS(
 			    target,
 			    0,
@@ -91,7 +84,7 @@ namespace YimMenu::Features
 			Hash target = PED::GET_MELEE_TARGET_FOR_PED(Self::GetPed().GetHandle());
 			if (target != 0 && ENTITY::DOES_ENTITY_EXIST(target))
 			{
-				if (WEAPON::HAS_ENTITY_BEEN_DAMAGED_BY_WEAPON(target, 0, true) && ENTITY::HAS_ENTITY_BEEN_DAMAGED_BY_ENTITY(target, Self::GetPed().GetHandle(), true))
+				if (WEAPON::HAS_ENTITY_BEEN_DAMAGED_BY_WEAPON(target, weapon, true) && ENTITY::HAS_ENTITY_BEEN_DAMAGED_BY_ENTITY(target, Self::GetPed().GetHandle(), true))
 				{
 					applyForceToTarget(target, scale);
 
