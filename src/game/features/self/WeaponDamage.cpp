@@ -27,5 +27,5 @@ namespace YimMenu::Features
 		}
 	};
 
-	static WeaponDamage _WeaponDamage{"weapondamage", "Weapon Damage", "Allows altering your weapons damage output (includes melee)"};
+	static WeaponDamage _WeaponDamage{"weapondamage", "Weapon Damage", "Allows altering your weapons damage output"};
 }

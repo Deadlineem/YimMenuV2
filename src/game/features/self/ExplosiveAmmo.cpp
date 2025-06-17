@@ -93,21 +93,15 @@ namespace YimMenu::Features
 	    {static_cast<int>(ExplosionType::_0x763D3B3B), "Unknown Explosion 763D3B3B"},
 	    {static_cast<int>(ExplosionType::SCRIPT_MISSILE_LARGE), "Script Missile (Large)"},
 	    {static_cast<int>(ExplosionType::SUBMARINE_BIG), "Submarine (Big)"},
-	    {static_cast<int>(ExplosionType::EMPLAUNCHER_EMP), "EMP Launcher"}
+	    {static_cast<int>(ExplosionType::EMPLAUNCHER_EMP), "EMP Launcher"},
 	};
-
-	static std::vector<std::pair<int, const char*>> GetExplosionTypes()
-	{
-		return std::vector<std::pair<int, const char*>>(
-		    std::begin(ExplosionTypeArray),
-		    std::end(ExplosionTypeArray));
-	}
 
 	static ListCommand _SelectedExplosion{
 	    "selectedexplosion",
 	    "Explosion Type",
 	    "Select an explosion type",
-	    GetExplosionTypes(),
+	    std::begin(ExplosionTypeArray),
+	    std::end(ExplosionTypeArray),
 	    static_cast<int>(ExplosionType::BULLET)};
 
 	static FloatCommand _ExplosionDamageScale{
@@ -130,31 +124,30 @@ namespace YimMenu::Features
 	{
 		using LoopedCommand::LoopedCommand;
 
-		virtual void OnTick() override
+		void OnTick() override
 		{
 			TriggerExplosion();
 		}
 
 		void TriggerExplosion()
 		{
-			Vector3 aimCoords;
-			if (WEAPON::GET_PED_LAST_WEAPON_IMPACT_COORD(Self::GetPed().GetHandle(), &aimCoords))
+			Vector3 impactCoords;
+			if (WEAPON::GET_PED_LAST_WEAPON_IMPACT_COORD(Self::GetPed().GetHandle(), &impactCoords))
 			{
-				int selected = _SelectedExplosion.GetState();
-				auto explosionType = static_cast<ExplosionType>(selected);
-				float explosionDamageScale = _ExplosionDamageScale.GetState();
-				float cameraShake = _CameraShake.GetState();
+				auto explosionType = static_cast<ExplosionType>(_SelectedExplosion.GetState());
+				float damageScale = _ExplosionDamageScale.GetState();
+				float shake = _CameraShake.GetState();
 
 				FIRE::ADD_OWNED_EXPLOSION(
 				    Self::GetPed().GetHandle(),
-				    aimCoords.x,
-				    aimCoords.y,
-				    aimCoords.z,
+				    impactCoords.x,
+				    impactCoords.y,
+				    impactCoords.z,
 				    static_cast<int>(explosionType),
-				    explosionDamageScale,
+				    damageScale,
 				    true,  // isAudible
 				    false, // isInvisible
-				    cameraShake);
+				    shake);
 			}
 		}
 	};
