@@ -5,21 +5,23 @@
 
 namespace YimMenu
 {
-	void ApplyModernStyle()
+	void ApplyModernVStyle()
 	{
 		ImGuiIO& io = ImGui::GetIO();
 		ImDrawList* drawList = ImGui::GetBackgroundDrawList();
 
-		float bubbleSpacing = 75.0f;
-		float bubbleSize = 55.0f;
-		float bgSize = 70.0f;
+		float bubbleSpacing = 80.0f;
+		float bubbleSize = 35.0f;
+		float bgSize = 50.0f;
 		float rounding = 8.0f;
 
 		static ImVec2 basePosOffset = ImVec2(0, 0);
 		static bool dragging = false;
 		static ImVec2 dragStart = ImVec2(0, 0);
 
-		ImVec2 defaultBasePos((*YimMenu::Pointers.ScreenResX / 2.0f) - (bubbleSpacing * YimMenu::UIManager::GetInstance().GetSubmenus().size() / 2.0f), 80.0f);
+		ImVec2 defaultBasePos(
+		    (*YimMenu::Pointers.ScreenResX / 2.0f) - (bubbleSpacing * YimMenu::UIManager::GetInstance().GetSubmenus().size() / 2.0f),
+		    80.0f);
 		ImVec2 basePos = defaultBasePos + basePosOffset;
 
 		ImGui::SetNextWindowPos(ImVec2(0, 0));
@@ -30,7 +32,8 @@ namespace YimMenu
 		for (size_t i = 0; i < submenus.size(); ++i)
 		{
 			auto& submenu = submenus[i];
-			ImVec2 bubblePos(basePos.x + i * bubbleSpacing, basePos.y + 2);
+			// Changed horizontal to vertical:
+			ImVec2 bubblePos(basePos.x, basePos.y + i * bubbleSpacing + 2);
 			ImVec2 center(bubblePos.x + bubbleSize / 2.0f, bubblePos.y + bubbleSize / 2.0f);
 
 			ImGui::SetCursorScreenPos(bubblePos);
@@ -92,8 +95,8 @@ namespace YimMenu
 			ImGui::PopID();
 		}
 
-		ImVec2 dragZoneMin = ImVec2(basePos.x, basePos.y - 20);
-		ImVec2 dragZoneMax = ImVec2(basePos.x + bubbleSpacing * submenus.size(), basePos.y + bubbleSize);
+		ImVec2 dragZoneMin = ImVec2(basePos.x + bubbleSize + 10, basePos.y);
+		ImVec2 dragZoneMax = ImVec2(basePos.x + bubbleSize + 10 + bubbleSpacing, basePos.y + bubbleSpacing * submenus.size());
 		ImGui::SetCursorScreenPos(dragZoneMin);
 		ImGui::InvisibleButton("##BubbleDragZone", dragZoneMax - dragZoneMin);
 
@@ -157,13 +160,13 @@ namespace YimMenu
 		}
 	}
 
-	struct ModernStyleRegistrar
+	struct ModernVStyleRegistrar
 	{
-		ModernStyleRegistrar()
+		ModernVStyleRegistrar()
 		{
-			YimMenu::StyleManager::RegisterStyle("Modern", ApplyModernStyle);
+			YimMenu::StyleManager::RegisterStyle("ModernV", ApplyModernVStyle);
 		}
 	};
 
-	static ModernStyleRegistrar s_Registrar;
+	static ModernVStyleRegistrar s_Registrar;
 }
