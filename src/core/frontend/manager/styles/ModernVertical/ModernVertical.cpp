@@ -19,9 +19,7 @@ namespace YimMenu
 		static bool dragging = false;
 		static ImVec2 dragStart = ImVec2(0, 0);
 
-		ImVec2 defaultBasePos(
-		    (*YimMenu::Pointers.ScreenResX / 2.0f) - (bubbleSpacing * YimMenu::UIManager::GetInstance().GetSubmenus().size() / 2.0f),
-		    80.0f);
+		ImVec2 defaultBasePos(40.0f, 40.0f);
 		ImVec2 basePos = defaultBasePos + basePosOffset;
 
 		ImGui::SetNextWindowPos(ImVec2(0, 0));
