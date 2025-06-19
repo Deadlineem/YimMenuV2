@@ -1,6 +1,9 @@
 #include "UIManager.hpp"
 #include "game/pointers/Pointers.hpp"
 #include "game/frontend/Menu.hpp"
+#include "core/frontend/manager/styles/StyleManager.hpp"
+#include "game/frontend/submenus/Settings/StyleSelector.hpp"
+#include "core/commands/ListCommand.hpp"
 
 namespace YimMenu
 {
@@ -19,7 +22,19 @@ namespace YimMenu
 
 	void UIManager::DrawImpl()
 	{
-		ImGuiIO& io = ImGui::GetIO();
+		const auto& styles = StyleManager::GetStyles();
+		int selectedIndex = g_StyleSelector.GetState(); // Works now
+		g_StyleWasJustRestored = false;
+
+		if (selectedIndex >= 0 && selectedIndex < static_cast<int>(styles.size()))
+		{
+			auto it = styles.begin();
+			std::advance(it, selectedIndex);
+			g_StyleWasJustRestored = true;
+			YimMenu::StyleManager::ApplyStyle(it->first.c_str());
+		}
+
+		/* ImGuiIO& io = ImGui::GetIO();
 		ImDrawList* drawList = ImGui::GetBackgroundDrawList();
 
 		float bubbleSpacing = 75.0f;
@@ -132,7 +147,7 @@ namespace YimMenu
 				ImGui::EndChild();
 			}
 			ImGui::End();
-		}
+		}*/
 	}
 
 	std::shared_ptr<Submenu> UIManager::GetActiveSubmenuImpl()

@@ -42,7 +42,7 @@ namespace YimMenu
 			return GetInstance().m_ShowContentWindow;
 		}
 
-	private:
+	public:
 		static inline UIManager& GetInstance()
 		{
 			static UIManager instance;
@@ -54,10 +54,27 @@ namespace YimMenu
 		void DrawImpl();
 		std::shared_ptr<Submenu> GetActiveSubmenuImpl();
 		std::shared_ptr<Category> GetActiveCategoryImpl();
-
 		std::shared_ptr<Submenu> m_ActiveSubmenu;
 		std::vector<std::shared_ptr<Submenu>> m_Submenus;
+
 		ImFont* m_OptionsFont = nullptr;
 		bool m_ShowContentWindow = true;
+		bool g_StyleWasJustRestored = false;
+
+		static void SetShowContentWindow(bool show)
+		{
+			GetInstance().m_ShowContentWindow = show;
+		}
+
+		static const std::vector<std::shared_ptr<Submenu>>& GetSubmenus()
+		{
+			return GetInstance().m_Submenus;
+		}
+
+		ImFont* GetOptionsFont()
+		{
+			return m_OptionsFont;
+		}
+
 	};
 }
