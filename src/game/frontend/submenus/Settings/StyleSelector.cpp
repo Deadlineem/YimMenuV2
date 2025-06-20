@@ -1,19 +1,15 @@
 ﻿#include "StyleSelector.hpp"
 #include "core/commands/ListCommand.hpp"
-#include "core/frontend/manager/styles/StyleManager.hpp"
+#include "core/frontend/manager/UIManager.hpp"
 
 namespace YimMenu
 {
-	// Build style options statically
-	static const std::vector<std::pair<int, const char*>> g_StyleOptions = [] {
-		std::vector<std::pair<int, const char*>> options;
-		int index = 0;
-		for (const auto& [name, _] : StyleManager::GetStyles())
-			options.emplace_back(index++, name.c_str());
-		return options;
-	}();
+	static const std::vector<std::pair<int, const char*>> g_StyleOptions = {
+	    {0, "Classic"},
+	    {1, "Modern"},
+	    {2, "ModernV"},
+	};
 
-	// Custom command class
 	class StyleSelector : public ListCommand
 	{
 	public:
@@ -21,19 +17,29 @@ namespace YimMenu
 
 		void OnChange() override
 		{
-			const auto& styles = StyleManager::GetStyles();
 			int selectedIndex = GetState();
 
-			if (selectedIndex >= 0 && selectedIndex < static_cast<int>(styles.size()))
+			UITheme selectedTheme = UITheme::Classic;
+
+			switch (selectedIndex)
 			{
-				auto it = styles.begin();
-				std::advance(it, selectedIndex);
-				StyleManager::ApplyStyle(it->first);
+			case 0:
+				selectedTheme = UITheme::Classic;
+				break;
+			case 1:
+				selectedTheme = UITheme::Modern;
+				break;
+			case 2:
+				selectedTheme = UITheme::ModernV;
+				break;
+			default:
+				selectedTheme = UITheme::Classic;
+				break;
 			}
 		}
 	};
 
-	// Create instance
+	// Expose as global reference so other code can use it
 	static StyleSelector g_InternalStyleSelector{
 	    "styleselector",
 	    "UI Style",
@@ -41,9 +47,5 @@ namespace YimMenu
 	    g_StyleOptions,
 	    0};
 
-	// Expose as reference
 	ListCommand& g_StyleSelector = g_InternalStyleSelector;
 }
-
-
-

@@ -1,11 +1,10 @@
-#include "core/frontend/manager/styles/StyleManager.hpp"
 #include "game/pointers/Pointers.hpp"
 #include "game/frontend/Menu.hpp"
 #include "core/frontend/manager/UIManager.hpp"
 
 namespace YimMenu
 {
-	void ApplyModernStyle()
+	void ApplyModernTheme()
 	{
 		ImGuiIO& io = ImGui::GetIO();
 		ImDrawList* drawList = ImGui::GetBackgroundDrawList();
@@ -19,14 +18,14 @@ namespace YimMenu
 		static bool dragging = false;
 		static ImVec2 dragStart = ImVec2(0, 0);
 
-		ImVec2 defaultBasePos((*YimMenu::Pointers.ScreenResX / 2.0f) - (bubbleSpacing * YimMenu::UIManager::GetInstance().GetSubmenus().size() / 2.0f), 80.0f);
+		ImVec2 defaultBasePos((*YimMenu::Pointers.ScreenResX / 2.0f) - (bubbleSpacing * YimMenu::UIManager::GetSubmenus().size() / 2.0f), 80.0f);
 		ImVec2 basePos = defaultBasePos + basePosOffset;
 
 		ImGui::SetNextWindowPos(ImVec2(0, 0));
 		ImGui::SetNextWindowSize(io.DisplaySize);
 		ImGui::Begin("##BubbleInputWindow", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoBringToFrontOnFocus);
 
-		const auto& submenus = YimMenu::UIManager::GetInstance().GetSubmenus();
+		const auto& submenus = YimMenu::UIManager::GetSubmenus();
 		for (size_t i = 0; i < submenus.size(); ++i)
 		{
 			auto& submenu = submenus[i];
@@ -142,7 +141,7 @@ namespace YimMenu
 
 				if (ImGui::BeginChild("##options", ImVec2(0, 0), true))
 				{
-					ImFont* optionsFont = YimMenu::UIManager::GetInstance().GetOptionsFont();
+					ImFont* optionsFont = YimMenu::UIManager::GetOptionsFont();
 					if (optionsFont)
 						ImGui::PushFont(optionsFont);
 
@@ -156,14 +155,4 @@ namespace YimMenu
 			ImGui::End();
 		}
 	}
-
-	struct ModernStyleRegistrar
-	{
-		ModernStyleRegistrar()
-		{
-			YimMenu::StyleManager::RegisterStyle("Modern", ApplyModernStyle);
-		}
-	};
-
-	static ModernStyleRegistrar s_Registrar;
 }

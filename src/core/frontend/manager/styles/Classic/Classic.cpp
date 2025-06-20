@@ -1,11 +1,10 @@
-#include "core/frontend/manager/styles/StyleManager.hpp"
 #include "game/pointers/Pointers.hpp"
 #include "game/frontend/Menu.hpp"
 #include "core/frontend/manager/UIManager.hpp"
 
 namespace YimMenu
 {
-	void ApplyClassicStyle()
+	void ApplyClassicTheme()
 	{
 		float windowWidth = *YimMenu::Pointers.ScreenResX / 2.5f;
 		float centerX = (*YimMenu::Pointers.ScreenResX - windowWidth) / 2.0f;
@@ -21,7 +20,7 @@ namespace YimMenu
 		{
 			if (ImGui::BeginChild("##submenus", ImVec2(120, ImGui::GetContentRegionAvail().y - 20), true, ImGuiWindowFlags_NoTitleBar))
 			{
-				const auto& submenus = YimMenu::UIManager::GetInstance().GetSubmenus();
+				const auto& submenus = YimMenu::UIManager::GetSubmenus();
 				auto activeSubmenu = YimMenu::UIManager::GetActiveSubmenu();
 
 				for (auto& submenu : submenus)
@@ -52,7 +51,7 @@ namespace YimMenu
 
 			if (ImGui::BeginChild("##options", ImVec2(0, 0), true))
 			{
-				auto optionsFont = YimMenu::UIManager::GetInstance().GetOptionsFont();
+				auto optionsFont = YimMenu::UIManager::GetOptionsFont();
 				if (optionsFont)
 					ImGui::PushFont(optionsFont);
 
@@ -67,15 +66,4 @@ namespace YimMenu
 		}
 		ImGui::End();
 	}
-
-
-	struct ClassicStyleRegistrar
-	{
-		ClassicStyleRegistrar()
-		{
-			YimMenu::StyleManager::RegisterStyle("Classic", ApplyClassicStyle);
-		}
-	};
-
-	static ClassicStyleRegistrar s_Registrar;
 }

@@ -1,11 +1,10 @@
-#include "core/frontend/manager/styles/StyleManager.hpp"
 #include "game/pointers/Pointers.hpp"
 #include "game/frontend/Menu.hpp"
 #include "core/frontend/manager/UIManager.hpp"
 
 namespace YimMenu
 {
-	void ApplyModernVStyle()
+	void ApplyModernVTheme()
 	{
 		ImGuiIO& io = ImGui::GetIO();
 		ImDrawList* drawList = ImGui::GetBackgroundDrawList();
@@ -26,7 +25,7 @@ namespace YimMenu
 		ImGui::SetNextWindowSize(io.DisplaySize);
 		ImGui::Begin("##BubbleInputWindow", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoBringToFrontOnFocus);
 
-		const auto& submenus = YimMenu::UIManager::GetInstance().GetSubmenus();
+		const auto& submenus = YimMenu::UIManager::GetSubmenus();
 		for (size_t i = 0; i < submenus.size(); ++i)
 		{
 			auto& submenu = submenus[i];
@@ -143,7 +142,7 @@ namespace YimMenu
 
 				if (ImGui::BeginChild("##options", ImVec2(0, 0), true))
 				{
-					ImFont* optionsFont = YimMenu::UIManager::GetInstance().GetOptionsFont();
+					ImFont* optionsFont = YimMenu::UIManager::GetOptionsFont();
 					if (optionsFont)
 						ImGui::PushFont(optionsFont);
 
@@ -157,14 +156,4 @@ namespace YimMenu
 			ImGui::End();
 		}
 	}
-
-	struct ModernVStyleRegistrar
-	{
-		ModernVStyleRegistrar()
-		{
-			YimMenu::StyleManager::RegisterStyle("ModernV", ApplyModernVStyle);
-		}
-	};
-
-	static ModernVStyleRegistrar s_Registrar;
 }
