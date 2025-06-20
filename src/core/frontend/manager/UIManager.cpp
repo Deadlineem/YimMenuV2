@@ -43,12 +43,7 @@ namespace YimMenu
 
 	std::shared_ptr<Submenu> UIManager::GetActiveSubmenuImpl()
 	{
-		if (m_ActiveSubmenu)
-		{
-			return m_ActiveSubmenu;
-		}
-
-		return nullptr;
+	    return m_ActiveSubmenu
 	}
 
 	std::shared_ptr<Category> UIManager::GetActiveCategoryImpl()
