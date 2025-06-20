@@ -4,10 +4,6 @@
 #include "game/frontend/submenus/Settings/StyleSelector.hpp"
 #include "core/commands/ListCommand.hpp"
 
-extern void ApplyClassicTheme();
-extern void ApplyModernTheme();
-extern void ApplyModernVTheme();
-
 namespace YimMenu
 {
 	void UIManager::AddSubmenuImpl(const std::shared_ptr<Submenu>&& submenu)
@@ -27,19 +23,20 @@ namespace YimMenu
 	{
 		int selectedIndex = g_StyleSelector.GetState();
 
+		// Render the selected theme based on the index, append when adding new themes
 		switch (static_cast<UITheme>(selectedIndex))
 		{
 		case UITheme::Classic:
-			ApplyClassicTheme();
+			RenderClassicTheme();
 			break;
 		case UITheme::Modern:
-			ApplyModernTheme();
+			RenderModernTheme();
 			break;
 		case UITheme::ModernV:
-			ApplyModernVTheme();
+			RenderModernVTheme();
 			break;
 		default:
-			ApplyClassicTheme();
+			RenderClassicTheme(); // Default theme
 			break;
 		}
 	}

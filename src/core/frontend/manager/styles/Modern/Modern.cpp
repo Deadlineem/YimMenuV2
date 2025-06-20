@@ -4,7 +4,7 @@
 
 namespace YimMenu
 {
-	void ApplyModernTheme()
+	void RenderModernTheme()
 	{
 		ImGuiIO& io = ImGui::GetIO();
 		ImDrawList* drawList = ImGui::GetBackgroundDrawList();

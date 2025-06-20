@@ -4,7 +4,7 @@
 
 namespace YimMenu
 {
-	void ApplyClassicTheme()
+	void RenderClassicTheme()
 	{
 		float windowWidth = *YimMenu::Pointers.ScreenResX / 2.5f;
 		float centerX = (*YimMenu::Pointers.ScreenResX - windowWidth) / 2.0f;

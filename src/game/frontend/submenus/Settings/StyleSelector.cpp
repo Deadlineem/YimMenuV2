@@ -19,8 +19,9 @@ namespace YimMenu
 		{
 			int selectedIndex = GetState();
 
-			UITheme selectedTheme = UITheme::Classic;
+			UITheme selectedTheme = UITheme::Classic; // Default Theme
 
+			// Set the selected theme based on the index, append when adding new themes
 			switch (selectedIndex)
 			{
 			case 0:

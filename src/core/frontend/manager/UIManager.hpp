@@ -1,19 +1,17 @@
 #pragma once
 #include "Category.hpp"
 #include "Submenu.hpp"
+#include "core/frontend/manager/styles/Themes.hpp"
 
 namespace YimMenu
 {
+	// Enum to represent different UI themes, append when adding new themes
 	enum class UITheme
 	{
 		Classic = 0,
 		Modern,
 		ModernV,
 	};
-
-	extern void ApplyClassicTheme();
-	extern void ApplyModernTheme();
-	extern void ApplyModernVTheme();
 
 	class UIManager
 	{
