@@ -35,6 +35,9 @@ namespace YimMenu
 		case UITheme::ModernV:
 			RenderModernVTheme();
 			break;
+		case UITheme::Modular:
+			RenderModularTheme();
+			break;
 		default:
 			RenderClassicTheme(); // Default theme
 			break;
