@@ -5,13 +5,14 @@
 
 namespace YimMenu::Features
 {
+	// Enum to represent different UI themes, append when adding new themes (UIManager.hpp & Themes.hpp as well)
 	static const std::vector<std::pair<int, const char*>> g_StyleOptions = {
 		{0, "Classic"},
 		{1, "Modern"},
 		{2, "ModernV"},
+	    {3, "Modular"},
 	};
 
-	// Expose as global reference so other code can use it
 	static ListCommand _StyleSelector{
 		"styleselector",
 		"UI Style",
@@ -50,6 +51,9 @@ namespace YimMenu
 			break;
 		case UITheme::ModernV:
 			RenderModernVTheme();
+			break;
+		case UITheme::Modular:
+			RenderModularTheme();
 			break;
 		default:
 			RenderClassicTheme(); // Default theme
