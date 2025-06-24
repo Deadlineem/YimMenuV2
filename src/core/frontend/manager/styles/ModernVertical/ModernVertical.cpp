@@ -64,9 +64,9 @@ namespace YimMenu
 				}
 			}
 
-			ImU32 defaultIconColor = IM_COL32(255, 255, 255, 255);
-			ImU32 activeIconColor = IM_COL32(46, 204, 113, 255);
-			ImU32 hoveredIconColor = IM_COL32(36, 174, 93, 255);
+			ImU32 defaultIconColor = ImGui::GetColorU32(ImGuiCol_Text);
+			ImU32 activeIconColor = ImGui::GetColorU32(ImGuiCol_ButtonActive);
+			ImU32 hoveredIconColor = ImGui::GetColorU32(ImGuiCol_ButtonHovered);
 			ImU32 iconColor = submenu == activeSubmenu ? activeIconColor : (hovered ? hoveredIconColor : defaultIconColor);
 
 			ImGui::PushFont(YimMenu::Menu::Font::g_AwesomeFont);
@@ -75,9 +75,9 @@ namespace YimMenu
 			drawList->AddText(YimMenu::Menu::Font::g_AwesomeFont, 0.0f, iconPos, iconColor, submenu->m_Icon.c_str());
 			ImGui::PopFont();
 
-			ImU32 defaultTextColor = IM_COL32(255, 255, 255, 255);
-			ImU32 activeTextColor = IM_COL32(46, 204, 113, 255);
-			ImU32 hoveredTextColor = IM_COL32(36, 174, 93, 255);
+			ImU32 defaultTextColor = ImGui::GetColorU32(ImGuiCol_Text);
+			ImU32 activeTextColor = ImGui::GetColorU32(ImGuiCol_ButtonActive);
+			ImU32 hoveredTextColor = ImGui::GetColorU32(ImGuiCol_ButtonHovered);
 			ImU32 textColor = submenu == activeSubmenu ? activeTextColor : (hovered ? hoveredTextColor : defaultTextColor);
 
 			ImVec2 labelSize = ImGui::CalcTextSize(submenu->m_Name.c_str());
