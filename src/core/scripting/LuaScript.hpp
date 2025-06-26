@@ -16,7 +16,6 @@ namespace YimMenu
 			UNLOADED
 		};
 
-	private:
 		struct ScriptCallback
 		{
 			int m_Coroutine;
@@ -25,9 +24,15 @@ namespace YimMenu
 			PVOID m_Fiber;
 			PVOID m_ParentFiber;
 			lua_CFunction m_LatentTarget;
+			lua_State* m_CoroState;
 			int m_LastReturnValue;
+
+			void SetTimeToResume(int millis);
 		};
 
+		using DispatchEventCallback = std::function<int(lua_State* state)>;
+
+	private:
 		LoadState m_LoadState = LoadState::EMPTY;
 		lua_State* m_State = nullptr;
 		std::string m_FileName;
@@ -36,6 +41,8 @@ namespace YimMenu
 		std::vector<ScriptCallback> m_ScriptCallbacks;
 		std::vector<ScriptCallback> m_QueuedScriptCallbacks;
 		bool m_RunningScriptCallbacks = false;
+		ScriptCallback* m_CurrentlyExecutingCallback = nullptr;
+		std::unordered_map<std::uint32_t, std::vector<int>> m_EventHandlers;
 
 		// Calls the function at the top of stack. If this returns false the stack would have nothing on it
 		bool CallFunction(int n_args, int n_results, lua_State* override_state = nullptr);
@@ -118,5 +125,13 @@ namespace YimMenu
 		void Yield(lua_State* state, int millis = 0, bool from_code = true);
 
 		void Tick();
+
+		ScriptCallback* GetRunningCallback()
+		{
+			return m_CurrentlyExecutingCallback;
+		}
+
+		void AddEventHandler(std::uint32_t event, int handler);
+		bool DispatchEvent(std::uint32_t event, const DispatchEventCallback& add_arguments_cb, bool handle_result = false);
 	};
 }

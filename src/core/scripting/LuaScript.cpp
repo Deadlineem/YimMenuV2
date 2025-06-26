@@ -119,8 +119,9 @@ namespace YimMenu
 		lua_setfield(m_State, LUA_REGISTRYINDEX, "context");
 
 		LuaManager::LoadLibraries(m_State);
-
-		if (luaL_loadfilex(m_State, file_name.data(), "t") != LUA_OK) // don't load binary chunks
+		
+		auto result = luaL_loadfilex(m_State, file_name.data(), "t");
+		if (result != LUA_OK) // don't load binary chunks
 		{
 			auto error = lua_tostring(m_State, -1);
 			LOGF(FATAL, "{}: {}", m_ModuleName, error);
@@ -168,6 +169,8 @@ namespace YimMenu
 		callback.m_Fiber = nullptr;
 		callback.m_ParentFiber = nullptr;
 		callback.m_LatentTarget = nullptr;
+		callback.m_CoroState = nullptr;
+		callback.m_LastReturnValue = -1;
 
 		// we don't want to push any additional callbacks to the main array when we're in the middle of running, and potentially deleting, them
 		if (m_RunningScriptCallbacks)
@@ -180,7 +183,18 @@ namespace YimMenu
 	{
 		lua_pushinteger(state, millis);
 		lua_pushboolean(state, from_code);
-		lua_yield(state, 2);
+		if (from_code)
+		{
+			if (lua_isyieldable(state) && lua_status(state) != LUA_YIELD) // only yield for the first time, since after that we're not yielding for real
+				lua_yield(state, 2);
+			GetScript(state).m_CurrentlyExecutingCallback->m_LastReturnValue = -1;
+			SwitchToFiber(GetScript(state).m_CurrentlyExecutingCallback->m_ParentFiber);
+		}
+		else
+		{
+			lua_yield(state, 2);
+			// function must return -1 immediately after this
+		}
 	}
 
 	void LuaScript::Tick()
@@ -194,7 +208,41 @@ namespace YimMenu
 			lua_State* coro_state = lua_tothread(m_State, -1);
 			lua_pop(m_State, 1);
 
-			auto state = ResumeCoroutine(0, 2, coro_state);
+			int num_args = 0;
+
+			if (callback.m_LastYieldFromCode)
+			{
+				// we need to pretend we're running in a coroutine
+				LuaManager::SetRunningCoroutine(coro_state);
+				m_CurrentlyExecutingCallback = &callback;
+				SwitchToFiber(callback.m_Fiber);
+				m_CurrentlyExecutingCallback = nullptr;
+				LuaManager::SetRunningCoroutine(nullptr);
+
+				if (callback.m_LastReturnValue < 0)
+				{
+					// yielded again into a latent function
+					auto time = lua_tointeger(m_State, -2);
+					lua_pop(m_State, 2);
+
+					callback.SetTimeToResume(time);
+					return false;
+				}
+				else
+				{
+					// done with this one
+					callback.m_LastYieldFromCode = false;
+					num_args = callback.m_LastReturnValue;
+				}
+			}
+
+			LuaManager::SetRunningCoroutine(coro_state);
+			m_CurrentlyExecutingCallback = &callback;
+
+			auto state = ResumeCoroutine(num_args, 2, coro_state);
+
+			m_CurrentlyExecutingCallback = nullptr;
+			LuaManager::SetRunningCoroutine(nullptr);
 
 			if (state != LUA_YIELD)
 			{
@@ -206,14 +254,7 @@ namespace YimMenu
 			auto from_code = lua_toboolean(m_State, -1);
 			lua_pop(m_State, 2);
 
-			if (time == 0)
-			{
-				callback.m_TimeToResume = std::nullopt;
-			}
-			else
-			{
-				callback.m_TimeToResume = std::chrono::high_resolution_clock::now() + std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(std::chrono::milliseconds(static_cast<std::uint64_t>(time)));
-			}
+			callback.SetTimeToResume(time);
 			callback.m_LastYieldFromCode = from_code;
 
 			return false;
@@ -222,5 +263,57 @@ namespace YimMenu
 		
 		std::ranges::move(m_QueuedScriptCallbacks, std::back_inserter(m_ScriptCallbacks));
 		m_QueuedScriptCallbacks.clear();
+	}
+
+	void LuaScript::AddEventHandler(std::uint32_t event, int handler)
+	{
+		if (auto it = m_EventHandlers.find(event); it != m_EventHandlers.end())
+			it->second.push_back(handler);
+		else
+			m_EventHandlers.emplace(event, std::vector{handler});
+	}
+
+	bool LuaScript::DispatchEvent(std::uint32_t event, const DispatchEventCallback& add_arguments_cb, bool handle_result)
+	{
+		bool result = true;
+
+		if (auto it = m_EventHandlers.find(event); it != m_EventHandlers.end())
+		{
+			for (auto& handler : it->second)
+			{
+				lua_rawgeti(m_State, LUA_REGISTRYINDEX, handler);
+				auto num_args = add_arguments_cb(m_State);
+
+				if (CallFunction(num_args, 1))
+				{
+					if (!lua_isnoneornil(m_State, -1))
+					{
+						if (lua_toboolean(m_State, -1) == false)
+						{
+							result = false;
+						}
+					}
+
+					lua_pop(m_State, 1);
+				}
+				
+				if (!result && handle_result)
+					return false;
+			}
+		}
+
+		return result;
+	}
+	
+	void LuaScript::ScriptCallback::SetTimeToResume(int millis)
+	{
+		if (millis == 0)
+		{
+			m_TimeToResume = std::nullopt;
+		}
+		else
+		{
+			m_TimeToResume = std::chrono::high_resolution_clock::now() + std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(std::chrono::milliseconds(static_cast<std::uint64_t>(millis)));
+		}
 	}
 }
