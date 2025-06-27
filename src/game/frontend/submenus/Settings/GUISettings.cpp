@@ -205,6 +205,65 @@ namespace YimMenu
 		}
 	}
 
+	static void DrawLayoutTab()
+	{
+		bool modified = false;
+		ImGuiStyle& style = ImGui::GetStyle();
+
+		ImGui::Text("Layout & Alignment:");
+		ImGui::Separator();
+
+		modified |= ImGui::SliderFloat2("WindowPadding", (float*)&style.WindowPadding, 0.0f, 32.0f, "%.1f");
+		modified |= ImGui::SliderFloat2("ItemSpacing", (float*)&style.ItemSpacing, 0.0f, 32.0f, "%.1f");
+		modified |= ImGui::SliderFloat2("ItemInnerSpacing", (float*)&style.ItemInnerSpacing, 0.0f, 32.0f, "%.1f");
+		modified |= ImGui::SliderFloat2("TouchExtraPadding", (float*)&style.TouchExtraPadding, 0.0f, 32.0f, "%.1f");
+		modified |= ImGui::SliderFloat2("DisplaySafeAreaPadding", (float*)&style.DisplaySafeAreaPadding, 0.0f, 32.0f, "%.1f");
+
+		modified |= ImGui::SliderFloat("IndentSpacing", &style.IndentSpacing, 0.0f, 64.0f, "%.1f");
+		modified |= ImGui::SliderFloat("ColumnsMinSpacing", &style.ColumnsMinSpacing, 0.0f, 64.0f, "%.1f");
+
+		modified |= ImGui::SliderFloat2("WindowTitleAlign", (float*)&style.WindowTitleAlign, 0.0f, 1.0f, "%.2f");
+		modified |= ImGui::SliderFloat2("ButtonTextAlign", (float*)&style.ButtonTextAlign, 0.0f, 1.0f, "%.2f");
+		modified |= ImGui::SliderFloat2("SelectableTextAlign", (float*)&style.SelectableTextAlign, 0.0f, 1.0f, "%.2f");
+
+		if (modified)
+			SaveColorSettings(); // Includes layout
+	}
+
+	static void DrawBorderTab()
+	{
+		bool modified = false;
+		ImGuiStyle& style = ImGui::GetStyle();
+
+		ImGui::Text("Border Sizes:");
+		ImGui::Separator();
+
+		modified |= ImGui::SliderFloat("WindowBorderSize", &style.WindowBorderSize, 0.0f, 8.0f, "%.1f");
+		modified |= ImGui::SliderFloat("FrameBorderSize", &style.FrameBorderSize, 0.0f, 8.0f, "%.1f");
+		modified |= ImGui::SliderFloat("TabBorderSize", &style.TabBorderSize, 0.0f, 8.0f, "%.1f");
+		modified |= ImGui::SliderFloat("PopupBorderSize", &style.PopupBorderSize, 0.0f, 8.0f, "%.1f");
+
+		if (modified)
+			SaveColorSettings();
+	}
+
+	static void DrawGlobalTab()
+	{
+		bool modified = false;
+		ImGuiStyle& style = ImGui::GetStyle();
+
+		ImGui::Text("Global Settings:");
+		ImGui::Separator();
+
+		modified |= ImGui::SliderFloat("GlobalAlpha", &style.Alpha, 0.1f, 1.0f, "%.2f");
+		modified |= ImGui::SliderFloat("DisabledAlpha", &style.DisabledAlpha, 0.0f, 1.0f, "%.2f");
+		modified |= ImGui::SliderFloat("MouseCursorScale", &style.MouseCursorScale, 0.5f, 2.0f, "%.2f");
+		modified |= ImGui::SliderFloat("CurveTessellationTol", &style.CurveTessellationTol, 0.1f, 10.0f, "%.2f");
+
+		if (modified)
+			SaveColorSettings();
+	}
+
 	std::shared_ptr<Category> DrawGUISettingsMenu()
 	{
 		InitializeColorCommands();
@@ -219,13 +278,26 @@ namespace YimMenu
 				DrawColorsTab();
 				ImGui::EndTabItem();
 			}
-
 			if (ImGui::BeginTabItem("Rounding"))
 			{
 				DrawRoundingTab();
 				ImGui::EndTabItem();
 			}
-
+			if (ImGui::BeginTabItem("Layout"))
+			{
+				DrawLayoutTab();
+				ImGui::EndTabItem();
+			}
+			if (ImGui::BeginTabItem("Borders"))
+			{
+				DrawBorderTab();
+				ImGui::EndTabItem();
+			}
+			if (ImGui::BeginTabItem("Global"))
+			{
+				DrawGlobalTab();
+				ImGui::EndTabItem();
+			}
 			ImGui::EndTabBar();
 		}
 

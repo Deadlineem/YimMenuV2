@@ -32,7 +32,7 @@ namespace YimMenu
 			ImGui::SetNextWindowPos(startPos, ImGuiCond_FirstUseEver);
 			ImGui::SetNextWindowSize(defaultSize, ImGuiCond_FirstUseEver);
 			ImGui::SetNextWindowSizeConstraints(ImVec2(60, 80), ImVec2(200, 200));
-			ImGui::SetNextWindowBgAlpha(0.0f); // Invisible background for drag + draw overlay
+			ImGui::SetNextWindowBgAlpha(0.0f); // Transparent background
 
 			if (ImGui::Begin(windowId.c_str(), nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar))
 			{
@@ -40,18 +40,15 @@ namespace YimMenu
 				ImVec2 winSize = ImGui::GetWindowSize();
 				ImVec2 center(winPos.x + winSize.x / 2, winPos.y + winSize.y / 2 - 10);
 
-				ImU32 bgColor = ImGui::GetColorU32(ImGuiCol_WindowBg);
 				ImU32 borderColor = ImGui::GetColorU32(ImGuiCol_Border);
-				ImU32 iconColor = ImGui::GetColorU32(ImGuiCol_Text);
-				ImU32 activeColor = ImGui::GetColorU32(ImGuiCol_ButtonActive);
+				ImU32 textColor = ImGui::GetColorU32(ImGuiCol_Text);
+				ImU32 buttonColor = ImGui::GetColorU32(ImGuiCol_Button);
 				ImU32 hoverColor = ImGui::GetColorU32(ImGuiCol_ButtonHovered);
-				ImU32 bubbleDefaultColor = bgColor;
+				ImU32 activeColor = ImGui::GetColorU32(ImGuiCol_ButtonActive);
 
-				// Bubble size inside window
-				ImVec2 bubbleSize(winSize.x - 20, winSize.y - 30);
+				ImVec2 bubbleSize = winSize - ImVec2(20, 30);
 				ImVec2 bubblePos(winPos.x + (winSize.x - bubbleSize.x) / 2, winPos.y + 10);
 
-				// Click logic via invisible button
 				ImGui::SetCursorScreenPos(bubblePos);
 				ImGui::InvisibleButton(("##bubble_" + submenu->m_Name).c_str(), bubbleSize);
 				bool hovered = ImGui::IsItemHovered();
@@ -68,33 +65,27 @@ namespace YimMenu
 					}
 				}
 
-				// Choose bubble background color based on hover state
-				ImU32 bubbleBgColor = hovered ? hoverColor : bubbleDefaultColor;
-
-				// Draw bubble background and border
+				ImU32 bubbleBgColor = (submenu == activeSubmenu) ? activeColor : (hovered ? hoverColor : buttonColor);
+				// Button
 				drawList->AddRectFilled(bubblePos, bubblePos + bubbleSize, bubbleBgColor, 10.0f);
 				drawList->AddRect(bubblePos, bubblePos + bubbleSize, borderColor, 10.0f, 0, 1.5f);
 
-				// Icon (scaled based on size)
+				// Icon
 				ImGui::PushFont(Menu::Font::g_AwesomeFont);
 				float iconScale = std::clamp(bubbleSize.y * 0.4f, 14.0f, 32.0f);
 				ImVec2 iconSize = ImGui::CalcTextSize(submenu->m_Icon.c_str());
 				ImVec2 iconPos(center.x - iconSize.x / 2, bubblePos.y + bubbleSize.y / 2 - iconSize.y / 2);
-
-				// Use activeColor if submenu active, else iconColor
-				ImU32 drawIconColor = (submenu == activeSubmenu) ? activeColor : iconColor;
-				drawList->AddText(Menu::Font::g_AwesomeFont, iconScale, iconPos, drawIconColor, submenu->m_Icon.c_str());
+				drawList->AddText(Menu::Font::g_AwesomeFont, iconScale, iconPos, textColor, submenu->m_Icon.c_str());
 				ImGui::PopFont();
 
-				// Label below bubble uses iconColor (not activeColor, to avoid too much highlight)
+				// Label below button
 				ImVec2 labelSize = ImGui::CalcTextSize(submenu->m_Name.c_str());
 				ImVec2 labelPos(center.x - labelSize.x / 2, bubblePos.y + bubbleSize.y + 6);
-				drawList->AddText(labelPos, iconColor, submenu->m_Name.c_str());
+				drawList->AddText(labelPos, textColor, submenu->m_Name.c_str());
 			}
 			ImGui::End();
 		}
 
-		// CATEGORY SELECTOR WINDOW
 		if (activeSubmenu)
 		{
 			ImGui::SetNextWindowSizeConstraints(ImVec2(100, 40), ImVec2(io.DisplaySize.x * 0.9f, 200));
@@ -105,7 +96,6 @@ namespace YimMenu
 			ImGui::End();
 		}
 
-		// OPTIONS CONTENT WINDOW
 		if (UIManager::ShowingContentWindow() && activeSubmenu)
 		{
 			ImVec2 defaultSize(*Pointers.ScreenResX / 2.8f, *Pointers.ScreenResY / 2.5f);

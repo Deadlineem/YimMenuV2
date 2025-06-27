@@ -7,7 +7,7 @@ namespace YimMenu
 {
 	void RenderModernVTheme()
 	{
-		YimMenu::SyncColorCommandsToStyle(); // Apply GUISettings colors
+		YimMenu::SyncColorCommandsToStyle();
 
 		ImGuiIO& io = ImGui::GetIO();
 		ImDrawList* drawList = ImGui::GetBackgroundDrawList();
@@ -29,40 +29,27 @@ namespace YimMenu
 		ImGui::Begin("##BubbleInputWindow", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoBringToFrontOnFocus);
 
 		const auto& submenus = YimMenu::UIManager::GetSubmenus();
+		auto activeSubmenu = YimMenu::UIManager::GetActiveSubmenu();
+
 		for (size_t i = 0; i < submenus.size(); ++i)
 		{
 			auto& submenu = submenus[i];
-			// vertical layout:
+
 			ImVec2 bubblePos(basePos.x, basePos.y + i * bubbleSpacing + 2);
 			ImVec2 center(bubblePos.x + bubbleSize / 2.0f, bubblePos.y + bubbleSize / 2.0f);
 
 			ImGui::SetCursorScreenPos(bubblePos);
 			ImGui::PushID(static_cast<int>(i));
 
-			ImVec2 bgPos(center.x - bgSize / 2.0f, center.y - bgSize / 2.0f);
-			drawList->AddRectFilled(bgPos, bgPos + ImVec2(bgSize, bgSize), ImGui::GetColorU32(ImGuiCol_WindowBg), rounding);
-			drawList->AddRect(bgPos, bgPos + ImVec2(bgSize, bgSize), ImGui::GetColorU32(ImGuiCol_Border), rounding, ImDrawFlags_None, 1.0f);
-
+			// Invisible button logic
 			ImGui::InvisibleButton("##Bubble", ImVec2(bubbleSize, bubbleSize));
 			bool hovered = ImGui::IsItemHovered();
 			bool clicked = ImGui::IsItemClicked();
 
-			ImU32 bubbleColor = ImGui::GetColorU32(ImGuiCol_Button);
-			ImU32 hoverColor = ImGui::GetColorU32(ImGuiCol_ButtonHovered);
-			ImU32 activeColor = ImGui::GetColorU32(ImGuiCol_ButtonActive);
-			ImU32 fillColor = hovered ? hoverColor : bubbleColor;
-
-			drawList->AddRectFilled(bubblePos, bubblePos + ImVec2(bubbleSize, bubbleSize), fillColor, rounding);
-			drawList->AddRect(bubblePos, bubblePos + ImVec2(bubbleSize, bubbleSize), ImGui::GetColorU32(ImGuiCol_Border), rounding, ImDrawFlags_None, 1.0f);
-
-			auto activeSubmenu = YimMenu::UIManager::GetActiveSubmenu();
-
 			if (clicked)
 			{
 				if (submenu == activeSubmenu)
-				{
 					YimMenu::UIManager::SetShowContentWindow(!YimMenu::UIManager::ShowingContentWindow());
-				}
 				else
 				{
 					YimMenu::UIManager::SetActiveSubmenu(submenu);
@@ -70,27 +57,40 @@ namespace YimMenu
 				}
 			}
 
-			ImU32 iconColor = submenu == activeSubmenu ? activeColor : (hovered ? hoverColor : ImGui::GetColorU32(ImGuiCol_Text));
+			// Colors from ImGui style
+			ImU32 buttonColor = ImGui::GetColorU32(ImGuiCol_Button);
+			ImU32 hoverColor = ImGui::GetColorU32(ImGuiCol_ButtonHovered);
+			ImU32 activeColor = ImGui::GetColorU32(ImGuiCol_ButtonActive);
+			ImU32 borderColor = ImGui::GetColorU32(ImGuiCol_Border);
+			ImU32 iconColor = ImGui::GetColorU32(ImGuiCol_Text);
 
+			// Final fill color
+			ImU32 fillColor = (submenu == activeSubmenu) ? activeColor : (hovered ? hoverColor : buttonColor);
+
+			// Draw filled button bubble
+			drawList->AddRectFilled(bubblePos, bubblePos + ImVec2(bubbleSize, bubbleSize), fillColor, rounding);
+			drawList->AddRect(bubblePos, bubblePos + ImVec2(bubbleSize, bubbleSize), borderColor, rounding, ImDrawFlags_None, 1.0f);
+
+			// Draw icon centered (text color always)
 			ImGui::PushFont(YimMenu::Menu::Font::g_AwesomeFont);
 			ImVec2 iconSize = ImGui::CalcTextSize(submenu->m_Icon.c_str());
 			ImVec2 iconPos(center.x - iconSize.x / 2, center.y - iconSize.y / 2);
 			drawList->AddText(YimMenu::Menu::Font::g_AwesomeFont, 0.0f, iconPos, iconColor, submenu->m_Icon.c_str());
 			ImGui::PopFont();
 
-			ImU32 textColor = iconColor;
+			// Draw label below bubble
 			ImVec2 labelSize = ImGui::CalcTextSize(submenu->m_Name.c_str());
 			ImVec2 labelPos(center.x - labelSize.x / 2, bubblePos.y + bubbleSize + 15.0f);
 			ImVec2 bgMin = labelPos - ImVec2(6, 2);
 			ImVec2 bgMax = labelPos + labelSize + ImVec2(6, 2);
-
 			drawList->AddRectFilled(bgMin, bgMax, ImGui::GetColorU32(ImGuiCol_ChildBg));
-			drawList->AddRect(bgMin, bgMax, ImGui::GetColorU32(ImGuiCol_Border), 4.0f);
-			drawList->AddText(labelPos, textColor, submenu->m_Name.c_str());
+			drawList->AddRect(bgMin, bgMax, borderColor, 4.0f);
+			drawList->AddText(labelPos, iconColor, submenu->m_Name.c_str());
 
 			ImGui::PopID();
 		}
 
+		// Drag zone (optional repositioning)
 		ImVec2 dragZoneMin = ImVec2(basePos.x + bubbleSize + 10, basePos.y);
 		ImVec2 dragZoneMax = ImVec2(basePos.x + bubbleSize + 10 + bubbleSpacing, basePos.y + bubbleSpacing * submenus.size());
 		ImGui::SetCursorScreenPos(dragZoneMin);
@@ -117,8 +117,7 @@ namespace YimMenu
 
 		ImGui::End();
 
-		auto activeSubmenu = YimMenu::UIManager::GetActiveSubmenu();
-
+		// Content window
 		if (YimMenu::UIManager::ShowingContentWindow() && activeSubmenu)
 		{
 			float windowWidth = *YimMenu::Pointers.ScreenResX / 2.5f;
@@ -129,14 +128,10 @@ namespace YimMenu
 			ImGui::SetNextWindowSize(windowSize, ImGuiCond_FirstUseEver);
 			ImGui::SetNextWindowPos(ImVec2(centerX, centerY), ImGuiCond_FirstUseEver);
 
-			ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse;
-
-			if (ImGui::Begin("##Categories&Content", nullptr, flags))
+			if (ImGui::Begin("##Categories&Content", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse))
 			{
 				if (ImGui::BeginChild("##categorySelectors", ImVec2(0, 60), true))
-				{
 					activeSubmenu->DrawCategorySelectors();
-				}
 				ImGui::EndChild();
 
 				if (ImGui::BeginChild("##options", ImVec2(0, 0), true))
