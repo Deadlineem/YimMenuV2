@@ -301,7 +301,7 @@ namespace YimMenu
 			ImGui::EndTabBar();
 		}
 
-		auto ImGuiEditor = std::make_shared<Category>("UI Editor");
+		auto ImGuiEditor = std::make_shared<Category>("Customize");
 		ImGuiEditor->AddItem(std::make_unique<ImGuiItem>([] {
 			DrawGUISettingsMenu();
 		}));
