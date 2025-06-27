@@ -1,11 +1,14 @@
 #include "game/pointers/Pointers.hpp"
 #include "game/frontend/Menu.hpp"
 #include "core/frontend/manager/UIManager.hpp"
+#include "game/frontend/submenus/Settings/GUISettings.hpp"
 
 namespace YimMenu
 {
 	void RenderModernVTheme()
 	{
+		YimMenu::SyncColorCommandsToStyle(); // Apply GUISettings colors
+
 		ImGuiIO& io = ImGui::GetIO();
 		ImDrawList* drawList = ImGui::GetBackgroundDrawList();
 
@@ -29,7 +32,7 @@ namespace YimMenu
 		for (size_t i = 0; i < submenus.size(); ++i)
 		{
 			auto& submenu = submenus[i];
-			// Changed horizontal to vertical:
+			// vertical layout:
 			ImVec2 bubblePos(basePos.x, basePos.y + i * bubbleSpacing + 2);
 			ImVec2 center(bubblePos.x + bubbleSize / 2.0f, bubblePos.y + bubbleSize / 2.0f);
 
@@ -37,17 +40,20 @@ namespace YimMenu
 			ImGui::PushID(static_cast<int>(i));
 
 			ImVec2 bgPos(center.x - bgSize / 2.0f, center.y - bgSize / 2.0f);
-			drawList->AddRectFilled(bgPos, ImVec2(bgPos.x + bgSize, bgPos.y + bgSize), IM_COL32(10, 10, 10, 255), rounding);
-			drawList->AddRect(bgPos, ImVec2(bgPos.x + bgSize, bgPos.y + bgSize), IM_COL32(192, 192, 192, 32), rounding, ImDrawFlags_None, 1.0f);
+			drawList->AddRectFilled(bgPos, bgPos + ImVec2(bgSize, bgSize), ImGui::GetColorU32(ImGuiCol_WindowBg), rounding);
+			drawList->AddRect(bgPos, bgPos + ImVec2(bgSize, bgSize), ImGui::GetColorU32(ImGuiCol_Border), rounding, ImDrawFlags_None, 1.0f);
 
-			ImU32 bubbleColor = IM_COL32(25, 25, 31, 255);
-			ImU32 hoverColor = IM_COL32(46, 46, 51, 255);
 			ImGui::InvisibleButton("##Bubble", ImVec2(bubbleSize, bubbleSize));
 			bool hovered = ImGui::IsItemHovered();
 			bool clicked = ImGui::IsItemClicked();
 
-			drawList->AddRectFilled(bubblePos, ImVec2(bubblePos.x + bubbleSize, bubblePos.y + bubbleSize), hovered ? hoverColor : bubbleColor, rounding);
-			drawList->AddRect(bubblePos, ImVec2(bubblePos.x + bubbleSize, bubblePos.y + bubbleSize), IM_COL32(192, 192, 192, 16), rounding, ImDrawFlags_None, 1.0f);
+			ImU32 bubbleColor = ImGui::GetColorU32(ImGuiCol_Button);
+			ImU32 hoverColor = ImGui::GetColorU32(ImGuiCol_ButtonHovered);
+			ImU32 activeColor = ImGui::GetColorU32(ImGuiCol_ButtonActive);
+			ImU32 fillColor = hovered ? hoverColor : bubbleColor;
+
+			drawList->AddRectFilled(bubblePos, bubblePos + ImVec2(bubbleSize, bubbleSize), fillColor, rounding);
+			drawList->AddRect(bubblePos, bubblePos + ImVec2(bubbleSize, bubbleSize), ImGui::GetColorU32(ImGuiCol_Border), rounding, ImDrawFlags_None, 1.0f);
 
 			auto activeSubmenu = YimMenu::UIManager::GetActiveSubmenu();
 
@@ -64,10 +70,7 @@ namespace YimMenu
 				}
 			}
 
-			ImU32 defaultIconColor = ImGui::GetColorU32(ImGuiCol_Text);
-			ImU32 activeIconColor = ImGui::GetColorU32(ImGuiCol_ButtonActive);
-			ImU32 hoveredIconColor = ImGui::GetColorU32(ImGuiCol_ButtonHovered);
-			ImU32 iconColor = submenu == activeSubmenu ? activeIconColor : (hovered ? hoveredIconColor : defaultIconColor);
+			ImU32 iconColor = submenu == activeSubmenu ? activeColor : (hovered ? hoverColor : ImGui::GetColorU32(ImGuiCol_Text));
 
 			ImGui::PushFont(YimMenu::Menu::Font::g_AwesomeFont);
 			ImVec2 iconSize = ImGui::CalcTextSize(submenu->m_Icon.c_str());
@@ -75,18 +78,14 @@ namespace YimMenu
 			drawList->AddText(YimMenu::Menu::Font::g_AwesomeFont, 0.0f, iconPos, iconColor, submenu->m_Icon.c_str());
 			ImGui::PopFont();
 
-			ImU32 defaultTextColor = ImGui::GetColorU32(ImGuiCol_Text);
-			ImU32 activeTextColor = ImGui::GetColorU32(ImGuiCol_ButtonActive);
-			ImU32 hoveredTextColor = ImGui::GetColorU32(ImGuiCol_ButtonHovered);
-			ImU32 textColor = submenu == activeSubmenu ? activeTextColor : (hovered ? hoveredTextColor : defaultTextColor);
-
+			ImU32 textColor = iconColor;
 			ImVec2 labelSize = ImGui::CalcTextSize(submenu->m_Name.c_str());
 			ImVec2 labelPos(center.x - labelSize.x / 2, bubblePos.y + bubbleSize + 15.0f);
 			ImVec2 bgMin = labelPos - ImVec2(6, 2);
 			ImVec2 bgMax = labelPos + labelSize + ImVec2(6, 2);
 
-			drawList->AddRectFilled(bgMin, bgMax, IM_COL32(26, 26, 31, 120));
-			drawList->AddRect(bgMin, bgMax, IM_COL32(192, 192, 192, 16), 4.0f);
+			drawList->AddRectFilled(bgMin, bgMax, ImGui::GetColorU32(ImGuiCol_ChildBg));
+			drawList->AddRect(bgMin, bgMax, ImGui::GetColorU32(ImGuiCol_Border), 4.0f);
 			drawList->AddText(labelPos, textColor, submenu->m_Name.c_str());
 
 			ImGui::PopID();
@@ -107,8 +106,7 @@ namespace YimMenu
 			else
 			{
 				ImVec2 delta = io.MousePos - dragStart;
-				basePosOffset.x += delta.x;
-				basePosOffset.y += delta.y;
+				basePosOffset += delta;
 				dragStart = io.MousePos;
 			}
 		}
@@ -130,6 +128,7 @@ namespace YimMenu
 
 			ImGui::SetNextWindowSize(windowSize, ImGuiCond_FirstUseEver);
 			ImGui::SetNextWindowPos(ImVec2(centerX, centerY), ImGuiCond_FirstUseEver);
+
 			ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse;
 
 			if (ImGui::Begin("##Categories&Content", nullptr, flags))
