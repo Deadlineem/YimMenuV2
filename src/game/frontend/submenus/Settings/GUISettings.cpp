@@ -288,17 +288,14 @@ namespace YimMenu
 		ImGui::Text("Font Configuration:");
 		ImGui::Separator();
 
-		ImGui::Text("Current Font Scale: %.1f", io.FontGlobalScale);
-		if (ImGui::SliderFloat("Font Scale", &io.FontGlobalScale, 0.5f, 1.25f, "%.2f"))
-		{
-			// Font scale applied immediately
-		}
+		static float bufferedFontScale = io.FontGlobalScale;
 
-		if (ImGui::Button("Rebuild Fonts"))
+		ImGui::Text("Current Font Scale: %.2f", io.FontGlobalScale);
+		ImGui::SliderFloat("Font Scale", &bufferedFontScale, 0.5f, 2.0f, "%.2f");
+
+		if (ImGui::Button("Apply Font Scale"))
 		{
-			io.Fonts->Clear(); // Clear existing fonts
-			// Optional: AddFontFromFileTTF(...) here for custom font loading
-			io.Fonts->Build();
+			io.FontGlobalScale = bufferedFontScale;
 		}
 	}
 
