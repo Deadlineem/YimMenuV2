@@ -1,6 +1,7 @@
 #include "GUISettings.hpp"
 #include "core/commands/ColorCommand.hpp"
 #include "core/commands/Command.hpp"
+#include "core/frontend/manager/styles/Themes.hpp"
 #include <vector>
 #include <memory>
 #include <string>
@@ -227,7 +228,7 @@ namespace YimMenu
 		modified |= ImGui::SliderFloat2("SelectableTextAlign", (float*)&style.SelectableTextAlign, 0.0f, 1.0f, "%.2f");
 
 		if (modified)
-			SaveColorSettings(); // Includes layout
+			SaveColorSettings();
 	}
 
 	static void DrawBorderTab()
@@ -264,6 +265,43 @@ namespace YimMenu
 			SaveColorSettings();
 	}
 
+	static void DrawAlignmentTab()
+	{
+		ImGuiStyle& style = ImGui::GetStyle();
+		bool modified = false;
+
+		ImGui::Text("Text & Layout Alignment:");
+		ImGui::Separator();
+
+		modified |= ImGui::SliderFloat2("WindowTitleAlign", (float*)&style.WindowTitleAlign, 0.0f, 1.0f, "%.2f");
+		modified |= ImGui::SliderFloat2("ButtonTextAlign", (float*)&style.ButtonTextAlign, 0.0f, 1.0f, "%.2f");
+		modified |= ImGui::SliderFloat2("SelectableTextAlign", (float*)&style.SelectableTextAlign, 0.0f, 1.0f, "%.2f");
+
+		if (modified)
+			SaveColorSettings();
+	}
+
+	static void DrawFontTab()
+	{
+		ImGuiIO& io = ImGui::GetIO();
+
+		ImGui::Text("Font Configuration:");
+		ImGui::Separator();
+
+		ImGui::Text("Current Font Scale: %.1f", io.FontGlobalScale);
+		if (ImGui::SliderFloat("Font Scale", &io.FontGlobalScale, 0.5f, 1.25f, "%.2f"))
+		{
+			// Font scale applied immediately
+		}
+
+		if (ImGui::Button("Rebuild Fonts"))
+		{
+			io.Fonts->Clear(); // Clear existing fonts
+			// Optional: AddFontFromFileTTF(...) here for custom font loading
+			io.Fonts->Build();
+		}
+	}
+
 	std::shared_ptr<Category> DrawGUISettingsMenu()
 	{
 		InitializeColorCommands();
@@ -288,14 +326,14 @@ namespace YimMenu
 				DrawLayoutTab();
 				ImGui::EndTabItem();
 			}
-			if (ImGui::BeginTabItem("Borders"))
+			if (ImGui::BeginTabItem("Alignment"))
 			{
-				DrawBorderTab();
+				DrawAlignmentTab();
 				ImGui::EndTabItem();
 			}
-			if (ImGui::BeginTabItem("Global"))
+			if (ImGui::BeginTabItem("Fonts"))
 			{
-				DrawGlobalTab();
+				DrawFontTab();
 				ImGui::EndTabItem();
 			}
 			ImGui::EndTabBar();

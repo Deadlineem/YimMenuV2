@@ -7,40 +7,9 @@
 
 namespace YimMenu
 {
-	void SetupStyle()
+	void DefaultStyle()
 	{
 		ImGuiStyle& style = ImGui::GetStyle();
-
-		// Resolve path
-		char* appDataPath = nullptr;
-		size_t len = 0;
-		_dupenv_s(&appDataPath, &len, "APPDATA");
-		std::string settingsPath = std::string(appDataPath ? appDataPath : "") + "\\YimMenuV2\\GUISettings.json";
-		free(appDataPath);
-
-		// Try loading colors from file
-		if (std::filesystem::exists(settingsPath))
-		{
-			std::ifstream file(settingsPath);
-			if (file.is_open())
-			{
-				nlohmann::json json;
-				file >> json;
-				file.close();
-
-				for (int i = 0; i < ImGuiCol_COUNT; ++i)
-				{
-					const char* name = ImGui::GetStyleColorName(i);
-					auto it = json.find(name);
-					if (it != json.end() && it->is_array() && it->size() == 4)
-					{
-						style.Colors[i] = ImVec4((*it)[0], (*it)[1], (*it)[2], (*it)[3]);
-					}
-				}
-				return; // Done applying custom colors
-			}
-		}
-
 		// Text
 		style.Colors[ImGuiCol_Text] = ImVec4(0.90f, 0.90f, 0.90f, 1.00f);
 		style.Colors[ImGuiCol_TextDisabled] = ImVec4(0.50f, 0.50f, 0.50f, 1.00f);
@@ -122,5 +91,41 @@ namespace YimMenu
 
 		// Rounding
 		style.GrabRounding = style.FrameRounding = style.ChildRounding = style.WindowRounding = 8.0f;
+	}
+
+	void SetupStyle()
+	{
+		ImGuiStyle& style = ImGui::GetStyle();
+
+		// Resolve path
+		char* appDataPath = nullptr;
+		size_t len = 0;
+		_dupenv_s(&appDataPath, &len, "APPDATA");
+		std::string settingsPath = std::string(appDataPath ? appDataPath : "") + "\\YimMenuV2\\GUISettings.json";
+		free(appDataPath);
+
+		// Try loading colors from file
+		if (std::filesystem::exists(settingsPath))
+		{
+			std::ifstream file(settingsPath);
+			if (file.is_open())
+			{
+				nlohmann::json json;
+				file >> json;
+				file.close();
+
+				for (int i = 0; i < ImGuiCol_COUNT; ++i)
+				{
+					const char* name = ImGui::GetStyleColorName(i);
+					auto it = json.find(name);
+					if (it != json.end() && it->is_array() && it->size() == 4)
+					{
+						style.Colors[i] = ImVec4((*it)[0], (*it)[1], (*it)[2], (*it)[3]);
+					}
+				}
+				return; // Done applying custom colors
+			}
+		}
+		DefaultStyle();	
 	}
 }
