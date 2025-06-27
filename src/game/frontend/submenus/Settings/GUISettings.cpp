@@ -308,7 +308,6 @@ namespace YimMenu
 
 		auto ImGuiEditor = std::make_shared<Category>("Customize");
 		ImGuiEditor->AddItem(std::make_unique<ImGuiItem>([] {
-			DrawGUISettingsMenu();
 			ImGui::Text("ImGui Style Editor");
 			ImGui::Separator();
 
