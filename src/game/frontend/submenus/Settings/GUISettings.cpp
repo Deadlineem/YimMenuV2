@@ -306,42 +306,41 @@ namespace YimMenu
 	{
 		InitializeColorCommands();
 
-		ImGui::Text("ImGui Style Editor");
-		ImGui::Separator();
-
-		if (ImGui::BeginTabBar("StyleTabs"))
-		{
-			if (ImGui::BeginTabItem("Colors"))
-			{
-				DrawColorsTab();
-				ImGui::EndTabItem();
-			}
-			if (ImGui::BeginTabItem("Rounding"))
-			{
-				DrawRoundingTab();
-				ImGui::EndTabItem();
-			}
-			if (ImGui::BeginTabItem("Layout"))
-			{
-				DrawLayoutTab();
-				ImGui::EndTabItem();
-			}
-			if (ImGui::BeginTabItem("Alignment"))
-			{
-				DrawAlignmentTab();
-				ImGui::EndTabItem();
-			}
-			if (ImGui::BeginTabItem("Fonts"))
-			{
-				DrawFontTab();
-				ImGui::EndTabItem();
-			}
-			ImGui::EndTabBar();
-		}
-
 		auto ImGuiEditor = std::make_shared<Category>("Customize");
 		ImGuiEditor->AddItem(std::make_unique<ImGuiItem>([] {
 			DrawGUISettingsMenu();
+			ImGui::Text("ImGui Style Editor");
+			ImGui::Separator();
+
+			if (ImGui::BeginTabBar("StyleTabs"))
+			{
+				if (ImGui::BeginTabItem("Colors"))
+				{
+					DrawColorsTab();
+					ImGui::EndTabItem();
+				}
+				if (ImGui::BeginTabItem("Rounding"))
+				{
+					DrawRoundingTab();
+					ImGui::EndTabItem();
+				}
+				if (ImGui::BeginTabItem("Layout"))
+				{
+					DrawLayoutTab();
+					ImGui::EndTabItem();
+				}
+				if (ImGui::BeginTabItem("Alignment"))
+				{
+					DrawAlignmentTab();
+					ImGui::EndTabItem();
+				}
+				if (ImGui::BeginTabItem("Fonts"))
+				{
+					DrawFontTab();
+					ImGui::EndTabItem();
+				}
+				ImGui::EndTabBar();
+			}
 		}));
 		return ImGuiEditor;
 	}
