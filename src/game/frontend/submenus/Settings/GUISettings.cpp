@@ -13,6 +13,7 @@ namespace YimMenu
 {
 	static std::vector<std::unique_ptr<ColorCommand>> g_ColorCommands;
 	static std::unordered_map<std::string, float> g_RoundingValues;
+	static std::unordered_map<std::string, std::unique_ptr<FloatCommand>> g_FloatCommands; // Global map for all FloatCommands
 	static bool g_ColorInit = false, g_RoundingInit = false;
 
 	static const std::string kSettingsFile = [] {
@@ -74,7 +75,7 @@ namespace YimMenu
 				s.TabRounding = v;
 	}
 
-	static void LoadColorSettings()
+	static void LoadSettings()
 	{
 		if (!std::filesystem::exists(kSettingsFile))
 			return;
@@ -82,25 +83,44 @@ namespace YimMenu
 		nlohmann::json json;
 		file >> json;
 
+		// Load colors
 		for (int i = 0; i < ImGuiCol_COUNT; ++i)
 			if (auto it = json.find(ImGui::GetStyleColorName(i)); it != json.end() && it->is_array())
 				g_ColorCommands[i]->SetState(ImVec4((*it)[0], (*it)[1], (*it)[2], (*it)[3]));
 
+		// Load rounding values
 		for (const char* key : {"WindowRounding", "FrameRounding", "GrabRounding", "ScrollbarRounding", "ChildRounding", "PopupRounding", "TabRounding"})
 			if (auto it = json.find(key); it != json.end())
 				g_RoundingValues[key] = *it;
+
+		// Load all float command values (except colors and rounding, which are handled)
+		for (auto& [key, cmd] : g_FloatCommands)
+		{
+			if (auto it = json.find(key); it != json.end() && it->is_number())
+			{
+				cmd->SetState(it->get<float>());
+			}
+		}
 	}
 
-	static void SaveColorSettings()
+	static void SaveSettings()
 	{
 		nlohmann::json json;
+
+		// Save colors
 		for (int i = 0; i < ImGuiCol_COUNT; ++i)
 		{
 			auto c = g_ColorCommands[i]->GetState();
 			json[ImGui::GetStyleColorName(i)] = {c.x, c.y, c.z, c.w};
 		}
+
+		// Save rounding
 		for (auto& [k, v] : g_RoundingValues)
 			json[k] = v;
+
+		// Save floats
+		for (auto& [k, cmd] : g_FloatCommands)
+			json[k] = cmd->GetState();
 
 		std::filesystem::create_directories(std::filesystem::path(kSettingsFile).parent_path());
 		std::ofstream(kSettingsFile) << json.dump(4);
@@ -131,7 +151,7 @@ namespace YimMenu
 			    {"TabRounding", style.TabRounding}};
 		}
 
-		LoadColorSettings();
+		LoadSettings();
 		SyncColorCommandsToStyle();
 		SyncRoundingToStyle();
 		g_ColorInit = true;
@@ -142,15 +162,14 @@ namespace YimMenu
 		std::string nameX = std::string(label) + "_X";
 		std::string nameY = std::string(label) + "_Y";
 
-		static std::unordered_map<std::string, std::unique_ptr<FloatCommand>> floatCommands;
+		// Use global float commands map
+		if (!g_FloatCommands.count(nameX))
+			g_FloatCommands[nameX] = std::make_unique<FloatCommand>(nameX.c_str(), nameX.c_str(), "Adjust " + nameX, min, max, x);
+		if (!g_FloatCommands.count(nameY))
+			g_FloatCommands[nameY] = std::make_unique<FloatCommand>(nameY.c_str(), nameY.c_str(), "Adjust " + nameY, min, max, y);
 
-		if (!floatCommands.count(nameX))
-			floatCommands[nameX] = std::make_unique<FloatCommand>(nameX.c_str(), nameX.c_str(), "Adjust " + nameX, min, max, x);
-		if (!floatCommands.count(nameY))
-			floatCommands[nameY] = std::make_unique<FloatCommand>(nameY.c_str(), nameY.c_str(), "Adjust " + nameY, min, max, y);
-
-		float newX = floatCommands[nameX]->GetState();
-		float newY = floatCommands[nameY]->GetState();
+		float newX = g_FloatCommands[nameX]->GetState();
+		float newY = g_FloatCommands[nameY]->GetState();
 
 		bool changed = false;
 		changed |= ImGui::SliderFloat(PrettyPrintLabel(nameX).c_str(), &newX, min, max, "%.1f");
@@ -158,11 +177,11 @@ namespace YimMenu
 
 		if (changed)
 		{
-			floatCommands[nameX]->SetState(newX);
-			floatCommands[nameY]->SetState(newY);
+			g_FloatCommands[nameX]->SetState(newX);
+			g_FloatCommands[nameY]->SetState(newY);
 			x = newX;
 			y = newY;
-			SaveColorSettings();
+			SaveSettings();
 		}
 	}
 
@@ -170,17 +189,15 @@ namespace YimMenu
 	{
 		std::string name(label);
 
-		static std::unordered_map<std::string, std::unique_ptr<FloatCommand>> floatCommands;
+		if (!g_FloatCommands.count(name))
+			g_FloatCommands[name] = std::make_unique<FloatCommand>(name.c_str(), name.c_str(), "Adjust " + name, min, max, v);
 
-		if (!floatCommands.count(name))
-			floatCommands[name] = std::make_unique<FloatCommand>(name.c_str(), name.c_str(), "Adjust " + name, min, max, v);
-
-		float newVal = floatCommands[name]->GetState();
+		float newVal = g_FloatCommands[name]->GetState();
 		if (ImGui::SliderFloat(PrettyPrintLabel(name).c_str(), &newVal, min, max, "%.1f"))
 		{
-			floatCommands[name]->SetState(newVal);
+			g_FloatCommands[name]->SetState(newVal);
 			v = newVal;
-			SaveColorSettings();
+			SaveSettings();
 		}
 	}
 
@@ -203,7 +220,7 @@ namespace YimMenu
 		if (changed)
 		{
 			SyncColorCommandsToStyle();
-			SaveColorSettings();
+			SaveSettings();
 		}
 	}
 
@@ -219,7 +236,7 @@ namespace YimMenu
 		if (changed)
 		{
 			SyncRoundingToStyle();
-			SaveColorSettings();
+			SaveSettings();
 		}
 	}
 
