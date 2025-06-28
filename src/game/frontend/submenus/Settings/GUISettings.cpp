@@ -1,185 +1,206 @@
 #include "GUISettings.hpp"
 #include "core/commands/ColorCommand.hpp"
 #include "core/commands/Command.hpp"
+#include "core/commands/FloatCommand.hpp"
 #include "core/frontend/manager/styles/Themes.hpp"
-#include <vector>
-#include <memory>
-#include <string>
-#include <fstream>
-#include <filesystem>
-#include <unordered_map>
 #include <nlohmann/json.hpp>
+#include <filesystem>
+#include <fstream>
 #include <Windows.h>
+#include <regex>
 
 namespace YimMenu
 {
 	static std::vector<std::unique_ptr<ColorCommand>> g_ColorCommands;
-	static bool g_ColorCommandsInitialized = false;
-	static bool g_RoundingInitialized = false;
-
 	static std::unordered_map<std::string, float> g_RoundingValues;
+	static bool g_ColorInit = false, g_RoundingInit = false;
 
 	static const std::string kSettingsFile = [] {
-		char* appDataPath = nullptr;
+		char* path = nullptr;
 		size_t len = 0;
-		_dupenv_s(&appDataPath, &len, "APPDATA");
-		std::string fullPath = std::string(appDataPath ? appDataPath : "") + "\\YimMenuV2\\GUISettings.json";
-		free(appDataPath);
-		return fullPath;
+		_dupenv_s(&path, &len, "APPDATA");
+		std::string full = std::string(path ? path : "") + "\\YimMenuV2\\GUISettings.json";
+		free(path);
+		return full;
 	}();
 
-	void SyncColorCommandsToStyle();
-	static void SyncRoundingToStyle();
-
-	static void LoadColorSettings()
+	static std::string PrettyPrintLabel(const std::string& raw)
 	{
-		if (!std::filesystem::exists(kSettingsFile))
-			return;
+		std::string out = raw;
+		if (out.size() > 2 && out.compare(out.size() - 2, 2, "_X") == 0)
+			out.replace(out.size() - 2, 2, " Horizontal");
+		else if (out.size() > 2 && out.compare(out.size() - 2, 2, "_Y") == 0)
+			out.replace(out.size() - 2, 2, " Vertical");
 
-		std::ifstream file(kSettingsFile);
-		if (!file.is_open())
-			return;
-
-		nlohmann::json json;
-		file >> json;
-		file.close();
-
-		for (int i = 0; i < ImGuiCol_COUNT; ++i)
+		std::string spaced;
+		spaced.reserve(out.size() + 10);
+		for (size_t i = 0; i < out.size(); ++i)
 		{
-			const char* name = ImGui::GetStyleColorName(i);
-			auto it = json.find(name);
-			if (it != json.end() && it->is_array() && it->size() == 4)
-			{
-				ImVec4 color = ImVec4((*it)[0], (*it)[1], (*it)[2], (*it)[3]);
-				g_ColorCommands[i]->SetState(color);
-			}
+			if (i > 0 && isupper(out[i]) && islower(out[i - 1]))
+				spaced += ' ';
+			spaced += out[i];
 		}
 
-		// Load rounding values
-		const char* roundingKeys[] = {
-		    "WindowRounding",
-		    "FrameRounding",
-		    "GrabRounding",
-		    "ScrollbarRounding",
-		    "ChildRounding",
-		    "PopupRounding",
-		    "TabRounding"};
+		std::regex uscore_re("_");
+		spaced = std::regex_replace(spaced, uscore_re, " ");
 
-		for (const char* key : roundingKeys)
-		{
-			auto it = json.find(key);
-			if (it != json.end() && it->is_number())
-				g_RoundingValues[key] = *it;
-		}
-	}
-
-	static void SaveColorSettings()
-	{
-		nlohmann::json json;
-
-		for (int i = 0; i < ImGuiCol_COUNT; ++i)
-		{
-			const char* name = ImGui::GetStyleColorName(i);
-			const ImVec4& color = g_ColorCommands[i]->GetState();
-			json[name] = {color.x, color.y, color.z, color.w};
-		}
-
-		for (const auto& [key, value] : g_RoundingValues)
-		{
-			json[key] = value;
-		}
-
-		std::filesystem::create_directories(std::filesystem::path(kSettingsFile).parent_path());
-
-		std::ofstream file(kSettingsFile);
-		if (file.is_open())
-		{
-			file << json.dump(4);
-			file.close();
-		}
+		return spaced;
 	}
 
 	void SyncColorCommandsToStyle()
 	{
-		ImGuiStyle& style = ImGui::GetStyle();
+		auto& style = ImGui::GetStyle();
 		for (int i = 0; i < ImGuiCol_COUNT; i++)
 			style.Colors[i] = g_ColorCommands[i]->GetState();
 	}
 
 	static void SyncRoundingToStyle()
 	{
-		ImGuiStyle& style = ImGui::GetStyle();
-		style.WindowRounding = g_RoundingValues["WindowRounding"];
-		style.FrameRounding = g_RoundingValues["FrameRounding"];
-		style.GrabRounding = g_RoundingValues["GrabRounding"];
-		style.ScrollbarRounding = g_RoundingValues["ScrollbarRounding"];
-		style.ChildRounding = g_RoundingValues["ChildRounding"];
-		style.PopupRounding = g_RoundingValues["PopupRounding"];
-		style.TabRounding = g_RoundingValues["TabRounding"];
+		auto& s = ImGui::GetStyle();
+		for (auto& [k, v] : g_RoundingValues)
+			if (k == "WindowRounding")
+				s.WindowRounding = v;
+			else if (k == "FrameRounding")
+				s.FrameRounding = v;
+			else if (k == "GrabRounding")
+				s.GrabRounding = v;
+			else if (k == "ScrollbarRounding")
+				s.ScrollbarRounding = v;
+			else if (k == "ChildRounding")
+				s.ChildRounding = v;
+			else if (k == "PopupRounding")
+				s.PopupRounding = v;
+			else if (k == "TabRounding")
+				s.TabRounding = v;
 	}
 
-	static void InitializeRoundingValues()
+	static void LoadColorSettings()
 	{
-		if (g_RoundingInitialized)
+		if (!std::filesystem::exists(kSettingsFile))
 			return;
+		std::ifstream file(kSettingsFile);
+		nlohmann::json json;
+		file >> json;
 
-		ImGuiStyle& style = ImGui::GetStyle();
-		g_RoundingValues["WindowRounding"] = style.WindowRounding;
-		g_RoundingValues["FrameRounding"] = style.FrameRounding;
-		g_RoundingValues["GrabRounding"] = style.GrabRounding;
-		g_RoundingValues["ScrollbarRounding"] = style.ScrollbarRounding;
-		g_RoundingValues["ChildRounding"] = style.ChildRounding;
-		g_RoundingValues["PopupRounding"] = style.PopupRounding;
-		g_RoundingValues["TabRounding"] = style.TabRounding;
+		for (int i = 0; i < ImGuiCol_COUNT; ++i)
+			if (auto it = json.find(ImGui::GetStyleColorName(i)); it != json.end() && it->is_array())
+				g_ColorCommands[i]->SetState(ImVec4((*it)[0], (*it)[1], (*it)[2], (*it)[3]));
 
-		g_RoundingInitialized = true;
+		for (const char* key : {"WindowRounding", "FrameRounding", "GrabRounding", "ScrollbarRounding", "ChildRounding", "PopupRounding", "TabRounding"})
+			if (auto it = json.find(key); it != json.end())
+				g_RoundingValues[key] = *it;
+	}
+
+	static void SaveColorSettings()
+	{
+		nlohmann::json json;
+		for (int i = 0; i < ImGuiCol_COUNT; ++i)
+		{
+			auto c = g_ColorCommands[i]->GetState();
+			json[ImGui::GetStyleColorName(i)] = {c.x, c.y, c.z, c.w};
+		}
+		for (auto& [k, v] : g_RoundingValues)
+			json[k] = v;
+
+		std::filesystem::create_directories(std::filesystem::path(kSettingsFile).parent_path());
+		std::ofstream(kSettingsFile) << json.dump(4);
 	}
 
 	void InitializeColorCommands()
 	{
-		if (g_ColorCommandsInitialized)
+		if (g_ColorInit)
 			return;
-
-		ImGuiStyle& style = ImGui::GetStyle();
-		g_ColorCommands.reserve(ImGuiCol_COUNT);
-
-		for (int i = 0; i < ImGuiCol_COUNT; i++)
-		{
-			const char* name = ImGui::GetStyleColorName(i);
+		auto& style = ImGui::GetStyle();
+		for (int i = 0; i < ImGuiCol_COUNT; ++i)
 			g_ColorCommands.emplace_back(std::make_unique<ColorCommand>(
-			    "ColorCommand." + std::string(name),
-			    name,
-			    "Edit color for " + std::string(name),
+			    "ColorCommand." + std::string(ImGui::GetStyleColorName(i)),
+			    ImGui::GetStyleColorName(i),
+			    "Edit color for " + std::string(ImGui::GetStyleColorName(i)),
 			    style.Colors[i]));
+
+		if (!g_RoundingInit)
+		{
+			g_RoundingInit = true;
+			g_RoundingValues = {
+			    {"WindowRounding", style.WindowRounding},
+			    {"FrameRounding", style.FrameRounding},
+			    {"GrabRounding", style.GrabRounding},
+			    {"ScrollbarRounding", style.ScrollbarRounding},
+			    {"ChildRounding", style.ChildRounding},
+			    {"PopupRounding", style.PopupRounding},
+			    {"TabRounding", style.TabRounding}};
 		}
 
-		InitializeRoundingValues();
 		LoadColorSettings();
 		SyncColorCommandsToStyle();
 		SyncRoundingToStyle();
-		g_ColorCommandsInitialized = true;
+		g_ColorInit = true;
+	}
+
+	static void DrawStyleVec2(const char* label, float& x, float& y, float min, float max)
+	{
+		std::string nameX = std::string(label) + "_X";
+		std::string nameY = std::string(label) + "_Y";
+
+		static std::unordered_map<std::string, std::unique_ptr<FloatCommand>> floatCommands;
+
+		if (!floatCommands.count(nameX))
+			floatCommands[nameX] = std::make_unique<FloatCommand>(nameX.c_str(), nameX.c_str(), "Adjust " + nameX, min, max, x);
+		if (!floatCommands.count(nameY))
+			floatCommands[nameY] = std::make_unique<FloatCommand>(nameY.c_str(), nameY.c_str(), "Adjust " + nameY, min, max, y);
+
+		float newX = floatCommands[nameX]->GetState();
+		float newY = floatCommands[nameY]->GetState();
+
+		bool changed = false;
+		changed |= ImGui::SliderFloat(PrettyPrintLabel(nameX).c_str(), &newX, min, max, "%.1f");
+		changed |= ImGui::SliderFloat(PrettyPrintLabel(nameY).c_str(), &newY, min, max, "%.1f");
+
+		if (changed)
+		{
+			floatCommands[nameX]->SetState(newX);
+			floatCommands[nameY]->SetState(newY);
+			x = newX;
+			y = newY;
+			SaveColorSettings();
+		}
+	}
+
+	static void DrawStyleFloat(const char* label, float& v, float min, float max)
+	{
+		std::string name(label);
+
+		static std::unordered_map<std::string, std::unique_ptr<FloatCommand>> floatCommands;
+
+		if (!floatCommands.count(name))
+			floatCommands[name] = std::make_unique<FloatCommand>(name.c_str(), name.c_str(), "Adjust " + name, min, max, v);
+
+		float newVal = floatCommands[name]->GetState();
+		if (ImGui::SliderFloat(PrettyPrintLabel(name).c_str(), &newVal, min, max, "%.1f"))
+		{
+			floatCommands[name]->SetState(newVal);
+			v = newVal;
+			SaveColorSettings();
+		}
 	}
 
 	static void DrawColorsTab()
 	{
-		bool modified = false;
-
+		bool changed = false;
 		ImGui::Text("Modify Colors:");
 		ImGui::Separator();
-
-		for (int i = 0; i < ImGuiCol_COUNT; i++)
+		for (int i = 0; i < ImGuiCol_COUNT; ++i)
 		{
-			const char* name = ImGui::GetStyleColorName(i);
-			ImVec4 color = g_ColorCommands[i]->GetState();
+			auto& cmd = g_ColorCommands[i];
+			auto col = cmd->GetState();
 
-			if (ImGui::ColorEdit4(name, (float*)&color))
+			if (ImGui::ColorEdit4(PrettyPrintLabel(ImGui::GetStyleColorName(i)).c_str(), (float*)&col))
 			{
-				g_ColorCommands[i]->SetState(color);
-				modified = true;
+				cmd->SetState(col);
+				changed = true;
 			}
 		}
-
-		if (modified)
+		if (changed)
 		{
 			SyncColorCommandsToStyle();
 			SaveColorSettings();
@@ -188,18 +209,14 @@ namespace YimMenu
 
 	static void DrawRoundingTab()
 	{
-		bool modified = false;
-
+		bool changed = false;
 		ImGui::Text("Adjust Rounding:");
 		ImGui::Separator();
+		for (auto& [k, v] : g_RoundingValues)
+			if (ImGui::SliderFloat(PrettyPrintLabel(k).c_str(), &v, 0.0f, 20.0f, "%.1f"))
+				changed = true;
 
-		for (auto& [key, value] : g_RoundingValues)
-		{
-			if (ImGui::SliderFloat(key.c_str(), &value, 0.0f, 20.0f, "%.1f"))
-				modified = true;
-		}
-
-		if (modified)
+		if (changed)
 		{
 			SyncRoundingToStyle();
 			SaveColorSettings();
@@ -208,106 +225,64 @@ namespace YimMenu
 
 	static void DrawLayoutTab()
 	{
-		bool modified = false;
-		ImGuiStyle& style = ImGui::GetStyle();
-
+		auto& s = ImGui::GetStyle();
 		ImGui::Text("Layout & Alignment:");
 		ImGui::Separator();
+		DrawStyleVec2("WindowPadding", s.WindowPadding.x, s.WindowPadding.y, 0.f, 32.f);
+		DrawStyleVec2("ItemSpacing", s.ItemSpacing.x, s.ItemSpacing.y, 0.f, 32.f);
+		DrawStyleVec2("ItemInnerSpacing", s.ItemInnerSpacing.x, s.ItemInnerSpacing.y, 0.f, 32.f);
+		DrawStyleVec2("TouchExtraPadding", s.TouchExtraPadding.x, s.TouchExtraPadding.y, 0.f, 32.f);
+		DrawStyleVec2("DisplaySafeAreaPadding", s.DisplaySafeAreaPadding.x, s.DisplaySafeAreaPadding.y, 0.f, 32.f);
 
-		modified |= ImGui::SliderFloat2("WindowPadding", (float*)&style.WindowPadding, 0.0f, 32.0f, "%.1f");
-		modified |= ImGui::SliderFloat2("ItemSpacing", (float*)&style.ItemSpacing, 0.0f, 32.0f, "%.1f");
-		modified |= ImGui::SliderFloat2("ItemInnerSpacing", (float*)&style.ItemInnerSpacing, 0.0f, 32.0f, "%.1f");
-		modified |= ImGui::SliderFloat2("TouchExtraPadding", (float*)&style.TouchExtraPadding, 0.0f, 32.0f, "%.1f");
-		modified |= ImGui::SliderFloat2("DisplaySafeAreaPadding", (float*)&style.DisplaySafeAreaPadding, 0.0f, 32.0f, "%.1f");
+		DrawStyleFloat("IndentSpacing", s.IndentSpacing, 0.f, 64.f);
+		DrawStyleFloat("ColumnsMinSpacing", s.ColumnsMinSpacing, 0.f, 64.f);
 
-		modified |= ImGui::SliderFloat("IndentSpacing", &style.IndentSpacing, 0.0f, 64.0f, "%.1f");
-		modified |= ImGui::SliderFloat("ColumnsMinSpacing", &style.ColumnsMinSpacing, 0.0f, 64.0f, "%.1f");
-
-		modified |= ImGui::SliderFloat2("WindowTitleAlign", (float*)&style.WindowTitleAlign, 0.0f, 1.0f, "%.2f");
-		modified |= ImGui::SliderFloat2("ButtonTextAlign", (float*)&style.ButtonTextAlign, 0.0f, 1.0f, "%.2f");
-		modified |= ImGui::SliderFloat2("SelectableTextAlign", (float*)&style.SelectableTextAlign, 0.0f, 1.0f, "%.2f");
-
-		if (modified)
-			SaveColorSettings();
+		DrawStyleVec2("WindowTitleAlign", s.WindowTitleAlign.x, s.WindowTitleAlign.y, 0.f, 1.f);
+		DrawStyleVec2("ButtonTextAlign", s.ButtonTextAlign.x, s.ButtonTextAlign.y, 0.f, 1.f);
+		DrawStyleVec2("SelectableTextAlign", s.SelectableTextAlign.x, s.SelectableTextAlign.y, 0.f, 1.f);
 	}
 
 	static void DrawBorderTab()
 	{
-		bool modified = false;
-		ImGuiStyle& style = ImGui::GetStyle();
-
+		auto& s = ImGui::GetStyle();
 		ImGui::Text("Border Sizes:");
 		ImGui::Separator();
-
-		modified |= ImGui::SliderFloat("WindowBorderSize", &style.WindowBorderSize, 0.0f, 8.0f, "%.1f");
-		modified |= ImGui::SliderFloat("FrameBorderSize", &style.FrameBorderSize, 0.0f, 8.0f, "%.1f");
-		modified |= ImGui::SliderFloat("TabBorderSize", &style.TabBorderSize, 0.0f, 8.0f, "%.1f");
-		modified |= ImGui::SliderFloat("PopupBorderSize", &style.PopupBorderSize, 0.0f, 8.0f, "%.1f");
-
-		if (modified)
-			SaveColorSettings();
+		DrawStyleFloat("WindowBorderSize", s.WindowBorderSize, 0.f, 8.f);
+		DrawStyleFloat("FrameBorderSize", s.FrameBorderSize, 0.f, 8.f);
+		DrawStyleFloat("TabBorderSize", s.TabBorderSize, 0.f, 8.f);
+		DrawStyleFloat("PopupBorderSize", s.PopupBorderSize, 0.f, 8.f);
 	}
 
 	static void DrawGlobalTab()
 	{
-		bool modified = false;
-		ImGuiStyle& style = ImGui::GetStyle();
-
+		auto& s = ImGui::GetStyle();
 		ImGui::Text("Global Settings:");
 		ImGui::Separator();
-
-		modified |= ImGui::SliderFloat("GlobalAlpha", &style.Alpha, 0.1f, 1.0f, "%.2f");
-		modified |= ImGui::SliderFloat("DisabledAlpha", &style.DisabledAlpha, 0.0f, 1.0f, "%.2f");
-		modified |= ImGui::SliderFloat("MouseCursorScale", &style.MouseCursorScale, 0.5f, 2.0f, "%.2f");
-		modified |= ImGui::SliderFloat("CurveTessellationTol", &style.CurveTessellationTol, 0.1f, 10.0f, "%.2f");
-
-		if (modified)
-			SaveColorSettings();
-	}
-
-	static void DrawAlignmentTab()
-	{
-		ImGuiStyle& style = ImGui::GetStyle();
-		bool modified = false;
-
-		ImGui::Text("Text & Layout Alignment:");
-		ImGui::Separator();
-
-		modified |= ImGui::SliderFloat2("WindowTitleAlign", (float*)&style.WindowTitleAlign, 0.0f, 1.0f, "%.2f");
-		modified |= ImGui::SliderFloat2("ButtonTextAlign", (float*)&style.ButtonTextAlign, 0.0f, 1.0f, "%.2f");
-		modified |= ImGui::SliderFloat2("SelectableTextAlign", (float*)&style.SelectableTextAlign, 0.0f, 1.0f, "%.2f");
-
-		if (modified)
-			SaveColorSettings();
+		DrawStyleFloat("GlobalAlpha", s.Alpha, 0.1f, 1.f);
+		DrawStyleFloat("DisabledAlpha", s.DisabledAlpha, 0.f, 1.f);
+		DrawStyleFloat("MouseCursorScale", s.MouseCursorScale, 0.5f, 2.f);
+		DrawStyleFloat("CurveTessellationTol", s.CurveTessellationTol, 0.1f, 10.f);
 	}
 
 	static void DrawFontTab()
 	{
 		ImGuiIO& io = ImGui::GetIO();
-
+		static float scale = io.FontGlobalScale;
 		ImGui::Text("Font Configuration:");
 		ImGui::Separator();
-
-		static float bufferedFontScale = io.FontGlobalScale;
-
-		ImGui::Text("Current Font Scale: %.2f", io.FontGlobalScale);
-		ImGui::SliderFloat("Font Scale", &bufferedFontScale, 0.5f, 2.0f, "%.2f");
-
+		ImGui::Text("Current Scale: %.2f", io.FontGlobalScale);
+		ImGui::SliderFloat("Font Scale", &scale, 0.5f, 2.0f, "%.2f");
 		if (ImGui::Button("Apply Font Scale"))
-		{
-			io.FontGlobalScale = bufferedFontScale;
-		}
+			io.FontGlobalScale = scale;
 	}
 
 	std::shared_ptr<Category> DrawGUISettingsMenu()
 	{
 		InitializeColorCommands();
-
-		auto ImGuiEditor = std::make_shared<Category>("Customize");
-		ImGuiEditor->AddItem(std::make_unique<ImGuiItem>([] {
+		auto imGuiCustomStyle = std::make_shared<Category>("Customize");
+		imGuiCustomStyle->AddItem(std::make_unique<ImGuiItem>([] {
 			ImGui::Text("ImGui Style Editor");
 			ImGui::Separator();
-
 			if (ImGui::BeginTabBar("StyleTabs"))
 			{
 				if (ImGui::BeginTabItem("Colors"))
@@ -325,9 +300,14 @@ namespace YimMenu
 					DrawLayoutTab();
 					ImGui::EndTabItem();
 				}
-				if (ImGui::BeginTabItem("Alignment"))
+				if (ImGui::BeginTabItem("Border"))
 				{
-					DrawAlignmentTab();
+					DrawBorderTab();
+					ImGui::EndTabItem();
+				}
+				if (ImGui::BeginTabItem("Global"))
+				{
+					DrawGlobalTab();
 					ImGui::EndTabItem();
 				}
 				if (ImGui::BeginTabItem("Fonts"))
@@ -338,6 +318,6 @@ namespace YimMenu
 				ImGui::EndTabBar();
 			}
 		}));
-		return ImGuiEditor;
+		return imGuiCustomStyle;
 	}
 }
