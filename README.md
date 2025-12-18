@@ -20,10 +20,10 @@ Press the `INSERT` key or `Ctrl+\` to open the menu
 
 We currently do not have a BattlEye bypass, and legitimate hosts will eventually remove you due to a heartbeat failure. There is currently no way to stop this other than using an actual (private) bypass
 
-### I removed FSL and all my progress disappeared!
+### Can't join each other's sessions. (infinite loading)
 
-FSL reroutes account save data to disk, so any progress made with FSL will only show up if you have FSL enabled. If you don't want this, you can also use YimMenuV2 without FSL, but this is not recommended
+if you're getting stuck on "Initializing" or "Joining GTA Online" enable Fast Join in Network tab then rejoin.
 
-### I removed FSL and the game doesn't start up anymore
+### Can't get out of missions or loadings
 
-This is a known issue; delete "Documents/GTAV Enhanced/Profiles" to fix
+Just join another session in Network tab. Invite only is recommended cuz it's faster. (optional)
