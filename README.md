@@ -10,7 +10,7 @@ I'm trying to fix this bs
 
 FSL NO LONGER WORKS WITH ENHANCED
   
-1. Download YimMenuV2 from [GitHub Releases](https://github.com/Sprosenax/gazmod-yimv2/releases/tag/nightly)
+1. Download YimMenuV2 from [GitHub Releases](https://github.com/Sprosenax/gazmod-yimv2-/releases/tag/nightly)
 2. Download an injector, such as [Xenos](https://www.unknowncheats.me/forum/general-programming-and-reversing/124013-xenos-injector-v2-3-2-a.html)
 3. Open Rockstar Launcher, select Grand Theft Auto V Enhanced, go to settings, and disable BattlEye. If you are using Steam or Epic Games, you may have to pass the -nobattleye command line parameter as well
 4. Launch GTA V, then use your injector to inject YimMenuV2.dll at the main menu
