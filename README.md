@@ -1,6 +1,8 @@
-# YimMenuV2
+# gazmod
 
-Experimental menu for GTA 5: Enhanced
+It's all shits and giggles until your friend gets stuck on Launching Session screen when starting a heist/mission
+
+I'm trying to fix this bs
 
 ## How to use
 
