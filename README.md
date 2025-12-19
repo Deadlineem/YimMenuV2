@@ -2,7 +2,7 @@
 
 It's all shits and giggles until your friend gets stuck on Launching Session screen when starting a heist/mission
 
-I'm trying to fix this bs
+Launching Session bug is fixed! Thx UnkEcho!
 
 ## How to use
 
