@@ -5,6 +5,7 @@ namespace YimMenu::Menu
 {
 	extern void Init();
 	extern void SetupFonts();
+	extern void SetupStyle();
 
 	namespace Font
 	{
