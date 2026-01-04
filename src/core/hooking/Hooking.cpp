@@ -1,5 +1,4 @@
 #include "Hooking.hpp"
-
 #include "BaseHook.hpp"
 #include "DetourHook.hpp"
 #include "VMTHook.hpp"
